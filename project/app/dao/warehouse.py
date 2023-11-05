@@ -29,6 +29,6 @@ class WarehouseDAO:
     def get_warehouse_by_name(self, wname):
         cursor = self.conn.cursor()
         query = 'select * from warehouse as w where w.wname = %s;'
-        cursor.execute(query, (wname))
+        cursor.execute(query, (wname,))
         result = [row for row in cursor]
         return result

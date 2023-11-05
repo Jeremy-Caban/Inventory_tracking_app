@@ -15,3 +15,10 @@ def get_warehouse_by_id(wid):
         return WarehouseHandler().get_warehouse_by_id(wid)
     else:
         return jsonify(Error = "Not implemented"), 501
+
+@app.route('/warehouse/<string:wname>')
+def get_warehouse_by_name(wname):
+    if request.method == 'GET':
+        return WarehouseHandler().get_warehouse_by_name(str(wname))
+    else:
+        return jsonify(Error = "Not implemented"), 501
