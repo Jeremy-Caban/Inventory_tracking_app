@@ -1,4 +1,4 @@
-from app.config import dbconfig  
+from app.config import dbconfig
 import psycopg2
 
 #TODO(xavier)
@@ -30,5 +30,20 @@ class WarehouseDAO:
         cursor = self.conn.cursor()
         query = 'select * from warehouse as w where w.wname = %s;'
         cursor.execute(query, (wname,))
+        result = [row for row in cursor]
+        return result
+
+    def get_warehouse_most_racks(self,amount:int):
+        cursor = self.conn.cursor()
+        query = """select * from (
+                    select wid, count(rid) as count
+                    from rack natural inner join warehouse
+                    group by wid
+            ) as list
+                natural inner join warehouse
+                order by list.count desc
+                limit %s;
+        """
+        cursor.execute(query, (amount,))
         result = [row for row in cursor]
         return result

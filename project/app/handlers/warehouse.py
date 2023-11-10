@@ -28,3 +28,13 @@ class WarehouseHandler:
             warehouse = self.build_warehouse_dict(row)
             return jsonify(Warehouse = warehouse)
 
+    #amount specified in project specs
+    def get_warehouse_most_racks(self,amount=10):
+        dao = WarehouseDAO()
+        rack_list = dao.get_warehouse_most_racks(amount)
+        if not rack_list:
+            return jsonify(Error = 'Warehouses not found'), 404
+        else:
+            result = [self.build_warehouse_dict(row) for row in rack_list]
+            return jsonify(Warehouses=result)
+
