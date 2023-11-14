@@ -4,8 +4,11 @@ from flask import jsonify, request
 
 #TODO(xavier) Finish implementing all warehouse routes and ohter functionality.
 
-@app.route('/warehouse')
+@app.route('/warehouse', methods=['GET', 'POST'])
 def getAllWarehouses():
+    if request.method == 'POST':
+        print(request.json)
+        return WarehouseHandler().insert_warehouse(request.json)
     return WarehouseHandler().get_all_warehouses()
 
 @app.route('/warehouse/<int:wid>',
@@ -22,3 +25,4 @@ def get_warehouse_by_name(wname):
         return WarehouseHandler().get_warehouse_by_name(str(wname))
     else:
         return jsonify(Error = "Not implemented"), 501
+

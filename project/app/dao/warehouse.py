@@ -47,3 +47,14 @@ class WarehouseDAO:
         cursor.execute(query, (amount,))
         result = [row for row in cursor]
         return result
+
+    def insert(self, wname, wcity, wemail=None, wphone=None, budget=0):
+        cursor= self.conn.cursor()
+        query = '''
+           insert into warehouse(wname, wcity, wemail, wphone, budget)
+           values (%s, %s, %s, %s, %s) returning wid;
+        '''
+        cursor.execute(query, (wname, wcity, wemail, wphone, budget))
+        wid = cursor.fetchone()[0]
+        self.conn.commit()
+        return wid
