@@ -1,4 +1,4 @@
-from app.config import dbconfig  
+from app.config import dbconfig
 import psycopg2
 
 class PartsDAO:
@@ -8,8 +8,8 @@ class PartsDAO:
             password=dbconfig.password,
             host=dbconfig.host,
             dbname=dbconfig.dbname,
-            port=dbconfig.port)
-        
+            port=dbconfig.port,
+        )
         print(self.conn)
 
     def getAllParts(self):
@@ -19,4 +19,60 @@ class PartsDAO:
         result = []
         for row in cursor:
             result.append(row)
-        return result    
+        return result
+    
+    def getPartById(self, pid):
+        cursor = self.conn.cursor()
+        query = "select * from parts where pid = %s;"
+        cursor.execute(query, (pid,))
+        result = cursor.fetchone()
+        return result
+    
+    def getPartsByPrice(self, pprice):
+        cursor = self.conn.cursor()
+        query = "select * from parts where pprice = %s;"
+        cursor.execute(query, (pprice,))
+        result = []
+        for row in cursor:
+            result.append(row)
+        return result
+
+    def getPartsByType(self, ptype):
+        cursor = self.conn.cursor()
+        query = "select * from parts where ptype = %s;"
+        cursor.execute(query, (ptype,))
+        result = []
+        for row in cursor:
+            result.append(row)
+        return result
+
+    def getPartsByPriceAndType(self, pprice, ptype):
+        cursor = self.conn.cursor()
+        query = "select * from parts where pprice = %s and ptype = %s;"
+        cursor.execute(query, (pprice, ptype))
+        result = []
+        for row in cursor:
+            result.append(row)
+        return result
+
+    def insert(self, pprice, ptype):
+        cursor = self.conn.cursor()
+        query = "insert into parts(pdate, pprice, ptype) values (now(), %s, %s) returning pid;"
+        cursor.execute(query, (pprice, ptype))
+        pid = cursor.fetchone()[0]
+        self.conn.commit()
+        return pid
+
+    def delete(self, pid):
+        cursor = self.conn.cursor()
+        query = "delete from parts where pid = %s;"
+        cursor.execute(query, (pid,))
+        self.conn.commit()
+        return pid
+
+    def update(self, pid, pprice, ptype):
+        cursor = self.conn.cursor()
+        query = "update parts set pprice = %s, ptype = %s where pid = %s;"
+        cursor.execute(query, (pprice, ptype, pid))
+        self.conn.commit()
+        return pid
