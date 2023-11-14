@@ -54,7 +54,7 @@ class WarehouseHandler:
     def insert_warehouse(self, json):
         wname = json.get('wname', None)
         wcity = json.get('wcity', None)
-        wemail = json.get('email',None)
+        wemail = json.get('wemail',None)
         wphone = json.get('wphone', None)
         budget = json.get('budget', 0)
         if wname and wcity:
