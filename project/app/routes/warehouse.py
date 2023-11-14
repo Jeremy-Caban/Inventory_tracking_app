@@ -18,6 +18,8 @@ def get_warehouse_by_id(wid):
         return WarehouseHandler().get_warehouse_by_id(wid)
     elif request.method == 'PUT':
         return WarehouseHandler().update_warehouse(wid, request.form)
+    elif request.method == 'DELETE':
+        return WarehouseHandler().delete_warehouse(wid)
     else:
         return jsonify(Error = "Not implemented"), 501
 

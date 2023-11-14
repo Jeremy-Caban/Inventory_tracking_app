@@ -91,6 +91,13 @@ class WarehouseHandler:
             return jsonify(Warehouse=result), 201
         return jsonify(Error='Attributes were not set properly')
 
+    def delete_warehouse(self, wid):
+        dao = WarehouseDAO()
+        if not dao.get_warehouse_by_id(wid):
+            return jsonify(Error="Warehouse not found"), 404
+        response = dao.delete(wid)
+        return jsonify(DeletedStatus='OK',row=response), 200
+
 
 
 

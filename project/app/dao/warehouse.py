@@ -69,3 +69,12 @@ class WarehouseDAO:
         cursor.execute(query, (wname, wcity, wemail, wphone, budget, wid))
         self.conn.commit()
         return wid
+
+    def delete(self, wid):
+        cursor = self.conn.cursor()
+        query = '''
+            delete from warehouse where wid = %s;
+        '''
+        cursor.execute(query, (wid,))
+        self.conn.commit()
+        return wid
