@@ -12,10 +12,12 @@ def getAllWarehouses():
     return WarehouseHandler().get_all_warehouses()
 
 @app.route('/warehouse/<int:wid>',
-           methods=['GET','POST'])
+           methods=['GET','PUT','DELETE'])
 def get_warehouse_by_id(wid):
     if request.method == 'GET':
         return WarehouseHandler().get_warehouse_by_id(wid)
+    elif request.method == 'PUT':
+        return WarehouseHandler().update_warehouse(wid, request.form)
     else:
         return jsonify(Error = "Not implemented"), 501
 

@@ -58,3 +58,14 @@ class WarehouseDAO:
         wid = cursor.fetchone()[0]
         self.conn.commit()
         return wid
+
+    def update(self, wid, wname, wcity, wemail, wphone, budget):
+        cursor = self.conn.cursor()
+        query = '''
+            update warehouse set wname = %s, wcity = %s, wemail = %s,
+                wphone = %s, budget = %s
+            where wid = %s;
+        '''
+        cursor.execute(query, (wname, wcity, wemail, wphone, budget, wid))
+        self.conn.commit()
+        return wid

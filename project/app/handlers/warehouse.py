@@ -65,4 +65,32 @@ class WarehouseHandler:
             return jsonify(Warehouse=result), 201
         return jsonify(Error="Unexpected/Missing attributes in request.")
 
+    def update_warehouse(self, wid, form):
+        KEYS_LENGTH = 6
+        dao = WarehouseDAO()
+        if not dao.get_warehouse_by_id(wid):
+            return jsonify(Error='Warehouse not found'), 404
+        if len(form) != KEYS_LENGTH:
+            return jsonify(Error=f'Malformed data: got {len(form)}')
+        wname = form.get('wname', None)
+        wcity = form.get('wcity', None)
+        wemail = form.get('wemail',None)
+        wphone = form.get('wphone', None)
+        budget = form.get('budget', 0)
+
+        #Assuming if other fields weren't set it was on purpose
+        if wname and wcity:
+            dao.update(wid, wname, wcity, wemail, wphone, budget)
+            result = self.build_warehouse_attributes(wid,
+                                                wname,
+                                                wcity,
+                                                wemail,
+                                                wphone,
+                                                budget
+                                                )
+            return jsonify(Warehouse=result), 201
+        return jsonify(Error='Attributes were not set properly')
+
+
+
 
