@@ -1,6 +1,7 @@
 from flask import jsonify
 from app.handlers.warehouse import WarehouseHandler
 from app.dao.rack import RackDAO
+from app.dao.warehouse import WarehouseDAO
 
 #TODO(xavier)
 class RackHandler:
@@ -33,7 +34,7 @@ class RackHandler:
     def insert_rack(self, json):
         capacity = json.get('capacity', 0)
         wid = json.get('wid', None)
-        if wid is None or not WarehouseHandler().get_warehouse_by_id(wid):
+        if wid is None or not WarehouseDAO().get_warehouse_by_id(wid):
             return jsonify(Error='Provided warehouse ID not found.')
         if capacity == 0:
             return jsonify(Error='Rack capacity cannot be 0.')
@@ -52,7 +53,7 @@ class RackHandler:
         capacity = json.get('capacity', 0)
         wid = json.get('wid', None)
         #TODO(xavier) add error code
-        if wid is None or not WarehouseHandler().get_warehouse_by_id(wid):
+        if wid is None or not WarehouseDAO().get_warehouse_by_id(wid):
             return jsonify(Error='Provided warehouse ID not found.')
         if capacity == 0:
             return jsonify(Error='Rack capacity cannot be 0.')
@@ -63,8 +64,10 @@ class RackHandler:
     #TODO(xavier) have to make sure rack does not have parts
     def delete_rack(self, rid):
         dao = RackDAO()
-        if not dao.get_warehouse_by_id(rid):
+        if not dao.get_rack_by_id(rid):
             return jsonify(Error="Rack not found"), 404
+        if len(dao.get_parts_in_rack(rid)) == 0:
+            return jsonify(Error="Cannot delete non empty rack")
         response = dao.delete(rid)
         return jsonify(DeletedStatus='OK',row=response), 200
 

@@ -50,8 +50,19 @@ class RackDAO:
     def delete(self, rid):
         cursor = self.conn.cursor()
         query = '''
-            delete from warehouse where rid = %s;
+            delete from rack where rid = %s;
         '''
         cursor.execute(query, (rid,))
         self.conn.commit()
         return rid
+    
+    def get_parts_in_rack(self, rid):
+        cursor = self.conn.cursor()
+        query = '''
+            select * from parts natural inner join rack as r where r.rid = %s;
+        '''
+        cursor.execute(query, (rid,))
+        result = [row for row in cursor]
+        return result
+
+
