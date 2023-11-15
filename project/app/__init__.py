@@ -8,5 +8,5 @@ app = Flask(__name__)
 CORS(app)
 
 
-from app.routes import parts, test2, warehouse, statistics
+from app.routes import parts, test2, warehouse, statistics, rack
 print('imported routes')
