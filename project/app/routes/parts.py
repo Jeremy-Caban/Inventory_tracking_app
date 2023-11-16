@@ -2,11 +2,11 @@ from app import app
 from app.handlers.parts import PartHandler
 from flask import Flask, jsonify, request
 
-@app.route('/parts')
+@app.route('/parts', methods=['GET', 'POST'])
 def getAllParts():
     if request.method == 'POST':
         print("REQUEST: ", request.json)
-        return PartHandler().insertPart(request.form)
+        return PartHandler().insertPartJson(request.json)
     else:
         if not request.args:
             return PartHandler().getAllParts()

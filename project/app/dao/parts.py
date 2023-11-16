@@ -57,7 +57,7 @@ class PartsDAO:
 
     def insert(self, pprice, ptype):
         cursor = self.conn.cursor()
-        query = "insert into parts(pdate, pprice, ptype) values (now(), %s, %s) returning pid;"
+        query = "insert into parts(pprice, ptype) values (%s, %s) returning pid;"
         cursor.execute(query, (pprice, ptype))
         pid = cursor.fetchone()[0]
         self.conn.commit()
