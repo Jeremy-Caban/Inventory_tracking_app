@@ -92,14 +92,14 @@ class UserDAO:
                 values (%s, %s, %s, %s) returning uid;
                 '''
         cursor.execute(query, (fname, lname, uemail, uphone))
-        sid = cursor.fetchone()[0]
+        uid = cursor.fetchone()[0]
         self.conn.commit()
         return uid
 
     def update(self, uid, fname, lname, uemail, uphone):
         cursor = self.conn.cursor()
         query = "update user set fname = %s, lname = %s, uemail = %s, uphone = %s where uid = %s;"
-        cursor.execute(query, (fname, lname, uemail, uphone, pid))
+        cursor.execute(query, (fname, lname, uemail, uphone, uid))
         self.conn.commit()
         return uid
 
