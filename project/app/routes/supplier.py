@@ -30,6 +30,17 @@ def get_supplier_by_id(sid):
     else:
         return jsonify(Error = "Not implemented"), 501
 
+
+@app.route('/supplier/<int:sid>/parts', methods=['GET','PUT','POST'])
+def associate_supplier_with_part(sid):
+    if request.method == 'GET':
+        return SupplierHandler().get_supplied_parts(sid)
+    elif request.method == 'POST':
+        return SupplierHandler().supply_part(sid, request.json)
+    elif request.method == 'PUT':
+        return SupplierHandler().update_supply_stock(sid, request.json)
+    else:
+        return jsonify(Error = "Not implemented"), 501
 #unused 
 # @app.route('/supplier/<string:sname>')
 # def get_supplier_by_name(sname):

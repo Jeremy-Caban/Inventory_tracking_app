@@ -1,9 +1,17 @@
+from unittest import result
 from flask import jsonify
 from app.dao.supplier import SupplierDAO
+from app.dao.parts import PartsDAO
 
 
 class SupplierHandler:
     #-----Helper methods-----
+    def build_part_dict(self, row):
+        result = {}
+        result['pid'] = row[0]
+        result['pprice'] = row[1]
+        result['ptype'] = row[2]
+        return result
     
     def build_supplier_attributes(self, sid, sname, scity, sphone, semail):
         return {
@@ -17,6 +25,15 @@ class SupplierHandler:
     def build_supplier_dict(self, rows):
         keys = ['sid', 'scity', 'sname', 'sphone','semail']
         return dict(zip(keys, rows))
+
+    def build_supplies_attributes(self, supid, stock, sid, pid):
+        return {
+                'supid':supid,
+                'stock':stock,
+                'sid':sid,
+                'pid':pid,
+                }
+
 
     #-----Helper methods END-----
 
@@ -108,3 +125,52 @@ class SupplierHandler:
     #     for row in supplier_by_city:
     #         result.append(self.build_supplier_dict(row))
     #     return jsonify(SuppliersByCity=result)
+
+
+    #get all supplied parts
+    def get_supplied_parts(self, sid):
+        dao = SupplierDAO()
+        if not sid or not dao.get_supplier_by_ID(sid): return jsonify(Error='Supplier not found'), 404
+        parts = dao.get_supplied_parts_by_sid(sid)
+        result = []
+        for row in parts:
+            part_dict = self.build_part_dict(row)
+            result.append(part_dict)
+
+        return jsonify(Parts=result)
+
+    #associate a part with a supplier
+    def supply_part(self, sid, json):
+        if len(json)!=2: return jsonify(Error="Malformed post request"), 400
+        stock = json["stock"]
+        pid = json["pid"]
+        dao = SupplierDAO()
+        parts_dao = PartsDAO()
+
+        if not sid or not dao.get_supplier_by_ID(sid): return jsonify(Error='Supplier not found'), 404
+        if not pid or not parts_dao.getPartById(pid): return jsonify(Error='Part not found'), 404
+        if type(stock) != int and stock < 0: return jsonify(Error='Malformed request, stock must be a postive integer'), 400
+        if dao.get_supply_by_sid_and_pid(sid, pid): return jsonify(Error='Supplier already supplies the part'), 406
+
+        supid = dao.supplyPart(stock, sid, pid)
+        supplies_dict = self.build_supplies_attributes(supid, stock, sid, pid)
+        return jsonify(Supplies=supplies_dict), 201
+    
+    #update supplier stock
+    def update_supply_stock(self, sid, json):
+        if len(json)!=2: return jsonify(Error="Malformed post request"), 400
+        stock = json["stock"]
+        pid = json["pid"]
+        dao = SupplierDAO()
+        parts_dao = PartsDAO()
+
+        if not sid or not dao.get_supplier_by_ID(sid): return jsonify(Error='Supplier not found'), 404
+        if not pid or not parts_dao.getPartById(pid): return jsonify(Error='Part not found'), 404
+        if type(stock) != int and stock < 0: return jsonify(Error='Malformed request'), 400
+        supid = dao.get_supply_by_sid_and_pid(sid,pid)
+        if not supid: return jsonify(Error='Supplies not found'), 404
+        supid = supid[0]
+        dao.update_supply_stock_by_supid(supid, stock)
+        supplies_dict = self.build_supplies_attributes(supid, stock, sid, pid)
+
+        return jsonify(Supplies = supplies_dict)

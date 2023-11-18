@@ -81,3 +81,64 @@ class SupplierDAO:
     #-----CRUD operations end here-----
 
     #-----Additional Query Operations after here-----
+
+
+
+    #--------Supplies-----------------------------
+    def supplyPart(self, stock, sid, pid):
+        cursor = self.conn.cursor()
+        query =  'insert into supplies(stock, sid, pid) values (%s, %s, %s) returning supid'
+        cursor.execute(query, (stock, sid, pid))
+        supid = cursor.fetchone()[0]
+        self.conn.commit()
+        return supid
+    
+    def update_supply_stock_by_supid(self, supid, stock):
+        cursor = self.conn.cursor()
+        query = '''
+                    update supplies set stock = %s
+                    where supid = %s;
+                '''
+        cursor.execute(query, (stock, supid))
+        self.conn.commit()
+        return supid
+    
+    def deleteAllSuppliesBySupplierId(self, sid):
+        cursor = self.conn.cursor()
+        query = """
+        DELETE FROM Supplies
+        WHERE sid = %s;
+        """
+        cursor.execute(query, (sid,))
+        self.conn.commit()
+        return sid
+    
+    def get_supplied_parts_by_sid(self, sid):
+        cursor = self.conn.cursor()
+        query = """
+        select pid, pprice, ptype from supplies natural inner join parts where sid = %s;
+        """
+        cursor.execute(query, (sid,))
+        result = []
+        for row in cursor:
+            result.append(row)
+        return result
+    
+    def get_supply_by_sid_and_pid(self, sid, pid):
+        cursor = self.conn.cursor()
+        query = """
+        select supid from supplies where sid = %s and pid = %s;
+        """
+        cursor.execute(query, (sid, pid))
+        result = cursor.fetchone()
+        return result
+
+    def get_supply_by_supid(self,supid):
+        cursor = self.conn.cursor()
+        query = """
+        select * from supplies where sid = %s;
+        """
+        cursor.execute(query, (supid))
+        result = cursor.fetchone()
+        return result
+# -------- end of supplies -------------
