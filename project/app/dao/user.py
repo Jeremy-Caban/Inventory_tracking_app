@@ -17,7 +17,7 @@ class UserDAO:
 
     def getAllUsers(self):
         cursor = self.conn.cursor()
-        query = "select * from user;"
+        query = "select * from public.user as u;"
         cursor.execute(query)
         result = []
         for row in cursor:
@@ -26,14 +26,14 @@ class UserDAO:
 
     def getUserById(self, uid):
         cursor = self.conn.cursor()
-        query = "select * from user where uid = %s;"
+        query = "select * from public.user as u where uid = %s;"
         cursor.execute(query, (uid,))
         result = cursor.fetchone()
         return result
 
     def getUserByFirstName(self, fname):
         cursor = self.conn.cursor()
-        query = "select * from user where fname = %s;"
+        query = "select * from public.user as u where fname = %s;"
         cursor.execute(query, (fname,))
         result = []
         for row in cursor:
@@ -42,7 +42,7 @@ class UserDAO:
 
     def getUserByLastName(self, lname):
         cursor = self.conn.cursor()
-        query = "select * from user where lname = %s;"
+        query = "select * from public.user as u where lname = %s;"
         cursor.execute(query, (lname,))
         result = []
         for row in cursor:
@@ -51,7 +51,7 @@ class UserDAO:
 
     def getUserByLastName(self, lname):
         cursor = self.conn.cursor()
-        query = "select * from user where lname = %s;"
+        query = "select * from public.user as u where lname = %s;"
         cursor.execute(query, (lname,))
         result = []
         for row in cursor:
@@ -60,7 +60,7 @@ class UserDAO:
 
     def getUserByFullName(self, fname, lname):
         cursor = self.conn.cursor()
-        query = "select * from user where fname = %s and lname = %s;"
+        query = "select * from public.user as u where fname = %s and lname = %s;"
         cursor.execute(query, (fname, lname))
         result = []
         for row in cursor:
@@ -69,7 +69,7 @@ class UserDAO:
 
     def getUserByEmail(self, uemail):
         cursor = self.conn.cursor()
-        query = "select * from user where uemail = %s;"
+        query = "select * from public.user as u where uemail = %s;"
         cursor.execute(query, (uemail,))
         result = []
         for row in cursor:
@@ -78,7 +78,7 @@ class UserDAO:
 
     def getUserByPhone(self, uphone):
         cursor = self.conn.cursor()
-        query = "select * from user where uphone = %s;"
+        query = "select * from public.user as u where uphone = %s;"
         cursor.execute(query, (uphone,))
         result = []
         for row in cursor:
@@ -88,7 +88,7 @@ class UserDAO:
     def insert(self, fname, lname, uemail=None, uphone=None):
         cursor = self.conn.cursor()
         query = '''
-                insert into user(fname, lname, uemail, uphone)
+                insert into public.user(fname, lname, uemail, uphone) as u
                 values (%s, %s, %s, %s) returning uid;
                 '''
         cursor.execute(query, (fname, lname, uemail, uphone))
@@ -98,14 +98,14 @@ class UserDAO:
 
     def update(self, uid, fname, lname, uemail, uphone):
         cursor = self.conn.cursor()
-        query = "update user set fname = %s, lname = %s, uemail = %s, uphone = %s where uid = %s;"
+        query = "update public.user as u set fname = %s, lname = %s, uemail = %s, uphone = %s where uid = %s;"
         cursor.execute(query, (fname, lname, uemail, uphone, uid))
         self.conn.commit()
         return uid
 
     def delete(self, uid):
         cursor = self.conn.cursor()
-        query = "delete from user where uid = %s;"
+        query = "delete from public.user as u where uid = %s;"
         cursor.execute(query, (uid,))
         self.conn.commit()
         return uid

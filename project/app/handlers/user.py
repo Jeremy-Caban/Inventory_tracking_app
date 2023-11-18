@@ -30,7 +30,7 @@ class UserHandler:
         for row in user_list:
             result = self.build_user_dict(row)
             result_list.append(result)
-        return jsonify(Parts=result_list)
+        return jsonify(User=result_list)
 
     def getUserById(self, uid):
         dao = UserDAO()
@@ -62,9 +62,15 @@ class UserHandler:
         else:
             return jsonify(Error="Malformed query string"), 400
 
+        result_list = []
+        for row in user_list:
+            result = self.build_user_dict(row)
+            result_list.append(result)
+        return jsonify(User=result_list)
+
     def insertUser(self, form):
         print("form: ", form, 'len ', len(form.request))
-        if len(form) != 2:
+        if len(form) != 4:
             return jsonify(Error="Malformed post request"), 400
         else:
             fname = form["fname"]
@@ -123,5 +129,3 @@ class UserHandler:
                     return jsonify(User=result), 200
                 else:
                     return jsonify(Error="Unexpected attributes in update request"), 400
-
-

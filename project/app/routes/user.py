@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 
 
 # Leamsi working here
-app.route('/user', methods=['GET', 'POST'])
+@app.route('/user', methods=['GET', 'POST'])
 def getAllUsers():
     if request.method == 'POST':
         print("REQUEST: ", request.json)
