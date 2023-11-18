@@ -36,7 +36,7 @@ class UserHandler:
         dao = UserDAO()
         row = dao.getUserById(uid)
         if not row:
-            return jsonify(Error="Part Not Found"), 404
+            return jsonify(Error="User Not Found"), 404
         else:
             user = self.build_user_dict(row)
             return jsonify(User=user)
@@ -106,7 +106,7 @@ class UserHandler:
     def deleteUser(self, uid):
         dao = UserDAO()
         if not dao.getUserById(uid):
-            return jsonify(Error="Part not found."), 404
+            return jsonify(Error="User not found."), 404
         else:
             dao.delete(uid)
             return jsonify(DeleteStatus="OK"), 200
@@ -114,7 +114,7 @@ class UserHandler:
     def updateUser(self, uid, json):
         dao = UserDAO()
         if not dao.getUserById(uid):
-            return jsonify(Error="Part not found."), 404
+            return jsonify(Error="User not found."), 404
         else:
             if len(json) != 4:
                 return jsonify(Error="Malformed update request"), 400
