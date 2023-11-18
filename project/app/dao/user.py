@@ -96,7 +96,7 @@ class UserDAO:
         self.conn.commit()
         return uid
 
-    def update(self, pid, fname, lname, uemail, uphone):
+    def update(self, uid, fname, lname, uemail, uphone):
         cursor = self.conn.cursor()
         query = "update user set fname = %s, lname = %s, uemail = %s, uphone = %s where uid = %s;"
         cursor.execute(query, (fname, lname, uemail, uphone, pid))
