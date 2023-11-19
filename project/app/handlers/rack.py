@@ -3,6 +3,7 @@ from app.handlers.warehouse import WarehouseHandler
 from app.dao.rack import RackDAO
 from app.dao.warehouse import WarehouseDAO
 from app.dao.parts import PartsDAO
+from app.dao.user import UserDAO
 
 #TODO(xavier)
 class RackHandler:
@@ -33,6 +34,20 @@ class RackHandler:
         else:
             rack = self.build_rack_dict(row)
             return jsonify(Rack = rack)
+
+    def get_warehouse_rack_lowstock(self, wid, json, amount=5):
+        dao = RackDAO()
+        if not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error = 'Warehouse not found'), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error = 'User not found'), 404
+        if user_warehouse_tuple[0] != wid:
+            return jsonify(Error = 'User has no access to warehouse.'), 403
+        rack_list = dao.get_warehouse_racks_lowstock(wid, amount)
+        result = [self.build_rack_dict(row) for row in rack_list]
+        return jsonify(Racks=result)
 
     def insert_rack(self, json):
         capacity = json.get('capacity', 0)

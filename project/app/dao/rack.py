@@ -26,6 +26,24 @@ class RackDAO:
         result = [row for row in cursor]
         return result
 
+    def get_warehouse_racks_lowstock(self,wid,amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select rid, capacity, quantity, pid, wid
+        from (
+           select * from
+           warehouse w natural inner join rack r
+           where w.wid = %s
+        ) as racks
+        where racks.quantity < ( racks.capacity * 0.25 )
+        order by racks.quantity
+        limit %s;
+        '''
+        cursor.execute(query, (wid,amount))
+        self.conn.commit()
+        result = [row for row in cursor]
+        return result
+
     def insert(self, capacity, quantity, pid, wid):
         cursor= self.conn.cursor()
         query = '''
