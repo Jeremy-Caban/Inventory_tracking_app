@@ -33,7 +33,46 @@ class TransactionHandler:
         keys = ['date','amount']
         return dict(zip(keys, rows))
     
-    def validate(self, pid, sid, rid, uid, wid, tquantity, ttotal):
+    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity):
+        part_dao = PartsDAO()
+        supplier_dao = SupplierDAO()
+        rack_dao = RackDAO()
+        user_dao = UserDAO()
+        warehouse_dao = WarehouseDAO()
+
+        part_row = part_dao.getPartById(pid)
+        supplier_row = supplier_dao.get_supplier_by_ID(sid)
+        rack_row = rack_dao.get_rack_by_id(rid)
+        user_row = user_dao.getUserById(uid)
+        warehouse_row = warehouse_dao.get_warehouse_by_id(wid)
+
+        if not part_row:
+            raise ValueError('Provided PID invalid')
+        if not supplier_row:
+            raise ValueError('Provided SID invalid')
+        if not rack_row:
+            raise ValueError('Provided RID invalid')
+        if not user_row:
+            raise ValueError('Provided UID invalid')
+        if not warehouse_row:
+            raise ValueError('Provided WID invalid')
+
+        supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
+        if not supid:
+            raise ValueError('Provided supplier does not provide this part')
+
+        #validate user belongs to warehouse
+        user_wid = user_dao.getUserWarehouse(uid)[0]
+        if user_wid != wid:
+            raise ValueError('User does work for given warehouse')
+
+        rack_pid = rack_dao.get_rack_part(rid)[0]
+        if rack_pid != pid:
+           raise ValueError('Rack does not hold provided part')
+        return True
+
+
+    def validate_incoming(self, pid, sid, rid, uid, wid, tquantity, ttotal):
         #validate existance of these
         #DAOS
         part_dao = PartsDAO()
@@ -142,7 +181,7 @@ class TransactionHandler:
             #tdate <-- don't validate for this since it'll be created in the dao via the now() method
             if tquantity and ttotal and pid and sid and rid and uid and wid:
                 #validate using daos:
-                if self.validate(pid, sid, rid, uid, wid, tquantity, ttotal): #check if valid data is sent  
+                if self.validate_incoming(pid, sid, rid, uid, wid, tquantity, ttotal): #check if valid data is sent  
                     #daos
                     transaction_dao = incoming_dao = TransactionDAO()
                     warehouse_dao = WarehouseDAO()
@@ -212,7 +251,7 @@ class TransactionHandler:
         for row in all_outgoing:
             result.append(self.build_attributes_dict(row))
         return jsonify(Outgoing=result)
-    
+
     def get_outgoing_by_id(self, outid):
         dao = TransactionDAO()
         row = dao.get_outgoing_by_id(outid)
@@ -221,22 +260,70 @@ class TransactionHandler:
         else:
             outgoing = self.build_attributes_dict(row[0])
             return jsonify(Outgoing = outgoing)
-    
 
     #CREATE-----
     def insert_outgoing(self, json):
-        return
-    
+        """
+        Create outgoing transaction.
+        Mutates outgoingt, transaction, warehouse,
+        and rack related to transaction
+        """
+        KEYS_LENGTH = 8
+        if len(json) != KEYS_LENGTH:
+            return jsonify(Error = 'Malformed json'), 400
+
+        tquantity = json.get('tquantity', None)
+        obuyer = json.get('obuyer', None)
+        ttotal = json.get('ttotal', None)
+        pid = json.get('pid', None)
+        sid = json.get('sid', None)
+        rid = json.get('rid', None)
+        uid = json.get('uid', None)
+        wid = json.get('wid', None)
+        try:
+            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity)
+        except ValueError as e:
+            return jsonify(Error = e.args[0]), 400
+
+        #if not self.validate_outgoing(pid, sid, rid, uid, wid, tquantity):
+        #    return jsonify(Error = 'Invalid data'), 400
+
+        if obuyer is None:
+            return jsonify(Error = 'Buyer is not set'), 400
+
+        rack_dao = RackDAO()
+        curr_quantity = rack_dao.get_rack_quantity(rid)
+        if curr_quantity < tquantity:
+            return jsonify(Error = 'Unable to complete transaction; \
+                    Not enough parts in rack'), 400
+
+        #mutations
+        transaction_dao = outgoing_dao = TransactionDAO()
+        tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid, uid)
+        outid = outgoing_dao.insert_outgoing(obuyer, wid, tid)
+        tdate = transaction_dao.get_transaction_date(tid)
+        attr_array = [tdate, tquantity, ttotal, pid, sid, rid, uid, wid, obuyer]
+
+        #update tables
+        warehouse_dao = WarehouseDAO()
+        new_budet = warehouse_dao.get_warehouse_budget(wid) + ttotal
+        wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
+
+        new_quantity = curr_quantity - tquantity
+        rid = rack_dao.set_rack_quantity(rid, new_quantity)
+
+        result = self.build_attributes_dict(attr_array, self.incoming_keys)
+        return jsonify(Outgoing=result)
+
+
 
     #UPDATE-----
     def update_outgoing(self, tid, json):
         return
-    
 
     #DELETE (ONLY FOR DEBUGGING)
     def delete_outgoing(self):
         return
-    
     #----------------------CRUD for exchange----------------------
     
     #READ-----

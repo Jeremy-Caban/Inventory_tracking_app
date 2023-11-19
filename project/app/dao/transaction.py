@@ -193,11 +193,20 @@ class TransactionDAO:
         result = [row for row in cursor]
         return result
     
-    def insert_outgoing(self):
-        return
+    def insert_outgoing(self, obuyer, wid, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["insert_outgoing"], (obuyer,wid, tid))
+        outid = cursor.fetchone()[0]
+        self.conn.commit()
+        return outid
     
+    #TODO(xavier)
     def update_outgoing(self, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["update_outgoing"], (wid, tid, incid))
+        self.conn.commit()
         return
+
     #for debugging, will be unused
     def delete_outgoing(self, tid):
         return
