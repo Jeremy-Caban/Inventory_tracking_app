@@ -1,7 +1,8 @@
 from app.config import dbconfig
 import psycopg2
 
-#TODO(xavier)
+
+# TODO(xavier)
 class RackDAO:
     def __init__(self):
         self.conn = psycopg2.connect(
@@ -26,7 +27,7 @@ class RackDAO:
         result = [row for row in cursor]
         return result
 
-    def get_warehouse_racks_lowstock(self,wid,amount):
+    def get_warehouse_racks_lowstock(self, wid, amount):
         cursor = self.conn.cursor()
         query = '''
         select rid, capacity, quantity, pid, wid
@@ -39,13 +40,33 @@ class RackDAO:
         order by racks.quantity
         limit %s;
         '''
-        cursor.execute(query, (wid,amount))
+        cursor.execute(query, (wid, amount))
+        self.conn.commit()
+        result = [row for row in cursor]
+        return result
+
+    def get_most_expensive_racks(self, wid, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        SELECT r.rid, r.capacity, r.quantity, p.pprice, r.pid, r.wid, (p.pprice * r.quantity) AS total_price
+        FROM (
+           SELECT *
+           FROM warehouse w
+           NATURAL INNER JOIN rack rk
+           WHERE w.wid = %s
+        ) AS r
+        INNER JOIN parts p ON r.pid = p.pid
+        GROUP BY r.rid, r.capacity, r.quantity, p.pprice, r.pid, r.wid
+        ORDER BY total_price DESC
+        LIMIT %s;
+        '''
+        cursor.execute(query, (wid, amount))
         self.conn.commit()
         result = [row for row in cursor]
         return result
 
     def insert(self, capacity, quantity, pid, wid):
-        cursor= self.conn.cursor()
+        cursor = self.conn.cursor()
         query = '''
            insert into rack(capacity, wid, quantity, pid)
            values (%s, %s, %s, %s) returning rid;
@@ -82,5 +103,3 @@ class RackDAO:
         cursor.execute(query, (rid,))
         result = [row for row in cursor]
         return result
-
-

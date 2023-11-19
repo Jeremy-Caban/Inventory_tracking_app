@@ -4,17 +4,17 @@ from app.dao.warehouse import WarehouseDAO
 #TODO(xavier)
 class WarehouseHandler:
     def build_warehouse_dict(self, rows):
-        keys = ['wid', 'wname', 'wcity', 'wemail','wphone','budget']
+        keys = ['wid', 'budget', 'wname', 'wcity', 'wemail', 'wphone']
         return dict(zip(keys, rows))
 
-    def build_warehouse_attributes(self, wid, wname, wcity, wemail, wphone, wbudget):
+    def build_warehouse_attributes(self, wid, wname, wcity, wemail, wphone, budget):
         return {
                 'wid':wid,
+                'budget': budget,
                 'wname':wname,
                 'wcity':wcity,
                 'wemail':wemail,
-                'wphone':wphone,
-                'wbudget':wbudget
+                'wphone':wphone
                 }
 
     def get_all_warehouses(self):
