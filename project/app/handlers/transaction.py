@@ -27,6 +27,11 @@ class TransactionHandler:
         elif ttype == "exchange":
             keys = self.exchange_keys
         return dict(zip(keys, attr_array))
+
+    #Only really used for incoming transactions as per spec
+    def build_least_cost_dict(self, rows):
+        keys = ['date','amount']
+        return dict(zip(keys, rows))
     
     def validate(self, pid, sid, rid, uid, wid, tquantity, ttotal):
         #validate existance of these
@@ -107,6 +112,18 @@ class TransactionHandler:
             incoming = self.build_attributes_dict(row[0]) #note: dao.get_incoming_by_id returns a list of rows
             return jsonify(Incoming = incoming)
     
+
+    def get_warehouse_least_cost(self, wid, json, amount=3):
+        dao = TransactionDAO()
+        if not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error='Warehouse not found'), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error='User has no access to warehouse'), 403
+        transaction_list = dao.get_warehouse_least_cost(wid, amount)
+        result = [self.build_least_cost_dict(row) for row in transaction_list]
+        return jsonify(Dates=result)
 
     #CREATE-----
     def insert_incoming(self, json):

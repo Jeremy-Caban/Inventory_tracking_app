@@ -52,6 +52,15 @@ class TransactionDAO:
         "delete_incoming":'''
                             delete from incomingt where incid = %s;
                             ''',
+        "get_least_cost":'''
+                            select tdate, sum(ttotal)
+                            from warehouse natural inner join incomingt
+                                natural inner join transaction
+                            where wid = %s
+                            group by tdate
+                            order by sum(ttotal)
+                            limit %s
+                            ''',
         #queries for outgoing-----
         "get_all_outgoing":'''
                             select * from outgoingt;
@@ -142,6 +151,12 @@ class TransactionDAO:
         self.conn.commit()
         return incid
        
+    def get_warehouse_least_cost(self, wid, amount):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_least_cost"], (wid, amount))
+        result = [row for row in cursor]
+        return result
+
     #for debugging, will be unused
     def delete_incoming(self, tid):
         return

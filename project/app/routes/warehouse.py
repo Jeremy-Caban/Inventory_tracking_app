@@ -2,6 +2,7 @@ from app import app
 from app.handlers.warehouse import WarehouseHandler
 from app.handlers.rack import RackHandler
 from app.handlers.supplier import SupplierHandler
+from app.handlers.transaction import TransactionHandler
 from flask import jsonify, request
 
 
@@ -73,3 +74,14 @@ def get_warehouse_top_suppliers(wid):
         if not request.json or request.json.get('User_id',None) is None:
             return jsonify(Error="User ID not provided."), 403
         return SupplierHandler().get_top_suppliers_for_warehouse(wid, request.json)
+    else:
+        return jsonify(Error="Not implemented"), 501
+
+@app.route('/warehouse/<int:wid>/transaction/leastcost', methods=['POST'])
+def get_warehouse_least_cost(wid):
+    if request.method == "POST":
+        if not request.json or request.json.get('User_id', None) is None:
+            return jsonify(Error="User ID is not provided."), 403
+        return TransactionHandler().get_warehouse_least_cost(wid, request.json)
+    else:
+        return jsonify(Error="Not implemented"), 501
