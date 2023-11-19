@@ -138,7 +138,17 @@ class SupplierDAO:
         query = """
         select * from supplies where sid = %s;
         """
-        cursor.execute(query, (supid))
+        cursor.execute(query, (supid,))
         result = cursor.fetchone()
         return result
+
+    def get_supplier_supplies_stock_by_supid(self, supid):
+        cursor = self.conn.cursor()
+        query = """
+        select stock from supplies where supid = %s;
+        """
+        cursor.execute(query, (supid,))
+        result = cursor.fetchone()
+        return result
+
 # -------- end of supplies -------------

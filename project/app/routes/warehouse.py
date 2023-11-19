@@ -4,7 +4,7 @@ from app.handlers.rack import RackHandler
 from flask import jsonify, request
 
 
-# TODO(xavier) Finish implementing all warehouse routes and ohter functionality.
+# TODO(xavier) Finish implementing all warehouse routes and other functionality.
 
 @app.route('/warehouse', methods=['GET', 'POST'])
 def getAllWarehouses():
@@ -53,5 +53,15 @@ def get_most_expensive_racks(wid):
         if not request.json or request.json.get('User_id', None) is None:
             return jsonify(Error="User ID not provided."), 403
         return RackHandler().get_most_expensive_racks(wid, request.json)
+    else:
+        return jsonify(Error="Not implemented"), 501
+
+
+@app.route('/warehouse/<int:wid>/rack/material', methods=['POST'])
+def get_warehouse_rack_bottom_material(wid):
+    if request.method == "POST":
+        if not request.json or request.json.get('User_id', None) is None:
+            return jsonify(Error="User ID not provided."), 403
+        return RackHandler().get_warehouse_rack_bottom_material(wid, request.json)
     else:
         return jsonify(Error="Not implemented"), 501
