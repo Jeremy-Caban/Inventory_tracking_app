@@ -17,6 +17,7 @@ class WarehouseDAO:
         query = "select * from warehouse;"
         cursor.execute(query)
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_warehouse_by_id(self, wid):
@@ -24,6 +25,7 @@ class WarehouseDAO:
         query = 'select * from warehouse as w where w.wid = %s;'
         cursor.execute(query, (wid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_warehouse_by_name(self, wname):
@@ -31,6 +33,7 @@ class WarehouseDAO:
         query = 'select * from warehouse as w where w.wname = %s;'
         cursor.execute(query, (wname,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_warehouse_most_incoming(self,amount):
@@ -44,6 +47,7 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (amount,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_warehouse_most_racks(self,amount:int):
@@ -57,6 +61,7 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (amount,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def insert(self, wname, wcity, wemail=None, wphone=None, budget=0):
@@ -68,6 +73,7 @@ class WarehouseDAO:
         cursor.execute(query, (wname, wcity, wemail, wphone, budget))
         wid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return wid
 
     def update(self, wid, wname, wcity, wemail, wphone, budget):
@@ -79,6 +85,7 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (wname, wcity, wemail, wphone, budget, wid))
         self.conn.commit()
+        cursor.close()
         return wid
 
     def delete(self, wid):
@@ -88,6 +95,7 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (wid,))
         self.conn.commit()
+        cursor.close()
         return wid
 
     #queries needed for validation
@@ -98,6 +106,7 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (wid,))
         budget = cursor.fetchone()[0]
+        cursor.close()
         return budget
     
     def set_warehouse_budget(self, wid, new_budget):
@@ -107,4 +116,5 @@ class WarehouseDAO:
         '''
         cursor.execute(query, (new_budget, wid))
         self.conn.commit()
+        cursor.close()
         return wid

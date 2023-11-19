@@ -26,6 +26,7 @@ class SupplierDAO:
         cursor.execute(query, (sname, scity, sphone, semail))
         sid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return sid
     
     #Read---------------------
@@ -34,6 +35,7 @@ class SupplierDAO:
         query = "select * from supplier;"
         cursor.execute(query)
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_supplier_by_ID(self, sid):
@@ -41,6 +43,7 @@ class SupplierDAO:
         query = "select * from supplier as s where s.sid = %s;"
         cursor.execute(query, (sid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     #unused
@@ -68,6 +71,7 @@ class SupplierDAO:
                 '''
         cursor.execute(query, (scity, sname, sphone, semail, sid))
         self.conn.commit()
+        cursor.close()
         return sid
     
     #Delete
@@ -76,6 +80,7 @@ class SupplierDAO:
         query = "delete from supplier where sid = %s;"
         cursor.execute(query, (sid,))
         self.conn.commit()
+        cursor.close()
         return sid
 
     #-----CRUD operations end here-----
@@ -91,6 +96,7 @@ class SupplierDAO:
         cursor.execute(query, (stock, sid, pid))
         supid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return supid
     
     def update_supply_stock_by_supid(self, supid, stock):
@@ -101,6 +107,7 @@ class SupplierDAO:
                 '''
         cursor.execute(query, (stock, supid))
         self.conn.commit()
+        cursor.close()
         return supid
     
     def deleteAllSuppliesBySupplierId(self, sid):
@@ -111,6 +118,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (sid,))
         self.conn.commit()
+        cursor.close()
         return sid
     
     def get_supplied_parts_by_sid(self, sid):
@@ -122,6 +130,7 @@ class SupplierDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
     
     def get_supply_by_sid_and_pid(self, sid, pid):
@@ -131,6 +140,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (sid, pid))
         result = cursor.fetchone()[0]
+        cursor.close()
         return result
 
     def get_supply_by_supid(self,supid):
@@ -140,6 +150,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (supid,))
         result = cursor.fetchone()[0]
+        cursor.close()
         return result
 
     def get_supplier_supplies_stock_by_supid(self, supid):
@@ -149,6 +160,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (supid,))
         result = cursor.fetchone()[0]
+        cursor.close()
         return result
 
     def get_supplier_supplies_stock_by_sid_and_pid(self, sid, pid):
@@ -158,6 +170,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (sid,pid))
         result = cursor.fetchone()[0]
+        cursor.close()
         return result
 
     def edit_supplies_stock_by_sid_and_pid(self, sid, pid, new_stock):
@@ -167,6 +180,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (new_stock, sid, pid))
         self.conn.commit()
+        cursor.close()
         return sid, pid
 
     def get_top_suppliers_for_warehouse(self, wid, amount):
@@ -181,6 +195,7 @@ class SupplierDAO:
         """
         cursor.execute(query, (wid, amount))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
 # -------- end of supplies -------------

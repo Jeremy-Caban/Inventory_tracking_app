@@ -22,6 +22,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserById(self, uid):
@@ -29,6 +30,7 @@ class UserDAO:
         query = "select * from public.user as u where uid = %s;"
         cursor.execute(query, (uid,))
         result = cursor.fetchone()
+        cursor.close()
         return result
 
     def getUserByFirstName(self, fname):
@@ -38,6 +40,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserByLastName(self, lname):
@@ -47,6 +50,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserByLastName(self, lname):
@@ -56,6 +60,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserByFullName(self, fname, lname):
@@ -65,6 +70,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserByEmail(self, uemail):
@@ -74,6 +80,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserByPhone(self, uphone):
@@ -83,6 +90,7 @@ class UserDAO:
         result = []
         for row in cursor:
             result.append(row)
+        cursor.close()
         return result
 
     def getUserWarehouse(self, uid):
@@ -91,6 +99,7 @@ class UserDAO:
         cursor.execute(query, (uid,))
         #don't index, might be None
         wid = cursor.fetchone()
+        cursor.close()
         return wid
 
     def insert(self, fname, lname, wid, uemail=None, uphone=None):
@@ -103,6 +112,7 @@ class UserDAO:
         cursor.execute(query, (fname, lname, uemail, uphone, wid))
         uid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return uid
 
     def update(self, uid, fname, lname, wid, uemail, uphone):
@@ -114,6 +124,7 @@ class UserDAO:
         '''
         cursor.execute(query, (fname, lname, uemail, uphone, wid, uid))
         self.conn.commit()
+        cursor.close()
         return uid
 
     def delete(self, uid):
@@ -121,4 +132,5 @@ class UserDAO:
         query = "delete from public.user as u where uid = %s;"
         cursor.execute(query, (uid,))
         self.conn.commit()
+        cursor.close()
         return uid

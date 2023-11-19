@@ -18,6 +18,7 @@ class RackDAO:
         query = "select * from rack;"
         cursor.execute(query)
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_rack_by_id(self, rid):
@@ -25,6 +26,7 @@ class RackDAO:
         query = 'select * from rack as r where r.rid = %s;'
         cursor.execute(query, (rid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_warehouse_racks_lowstock(self, wid, amount):
@@ -43,6 +45,7 @@ class RackDAO:
         cursor.execute(query, (wid, amount))
         self.conn.commit()
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def get_most_expensive_racks(self, wid, amount):
@@ -63,6 +66,7 @@ class RackDAO:
         cursor.execute(query, (wid, amount))
         self.conn.commit()
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     #TODO prob belongs in parts
@@ -83,6 +87,7 @@ class RackDAO:
         cursor.execute(query,(wid, amount))
         self.conn.commit()
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     def insert(self, capacity, quantity, pid, wid):
@@ -94,6 +99,7 @@ class RackDAO:
         cursor.execute(query, (capacity, wid, quantity, pid))
         rid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return rid
 
     def update(self, rid, capacity, quantity, pid, wid):
@@ -104,6 +110,7 @@ class RackDAO:
         '''
         cursor.execute(query, (capacity, wid, quantity, pid, rid))
         self.conn.commit()
+        cursor.close()
         return rid
 
     def delete(self, rid):
@@ -113,6 +120,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         self.conn.commit()
+        cursor.close()
         return rid
 
     def get_parts_in_rack(self, rid):
@@ -122,6 +130,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
 
@@ -133,6 +142,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         wid = cursor.fetchone()
+        cursor.close()
         return wid
 
     def get_rack_part(self, rid):
@@ -142,6 +152,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         pid = cursor.fetchone()
+        cursor.close()
         return pid
     
     def get_rack_capacity(self, rid):
@@ -151,6 +162,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         capacity = cursor.fetchone()[0]
+        cursor.close()
         return capacity
 
     def get_rack_quantity(self, rid):
@@ -160,6 +172,7 @@ class RackDAO:
         '''
         cursor.execute(query, (rid,))
         quantity = cursor.fetchone()[0]
+        cursor.close()
         return quantity
 
     def set_rack_quantity(self, rid, new_quantity):
@@ -169,4 +182,5 @@ class RackDAO:
          '''
         cursor.execute(query, (new_quantity, rid))
         self.conn.commit()
+        cursor.close()
         return rid

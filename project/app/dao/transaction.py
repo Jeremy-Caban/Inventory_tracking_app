@@ -110,6 +110,7 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_all_transactions"])
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def insert_transaction(self, tquantity, ttotal, pid, sid, rid, uid):
@@ -117,6 +118,7 @@ class TransactionDAO:
         cursor.execute(self.query_dict["insert_transaction"], (tquantity, ttotal, pid, sid, rid, uid))
         tid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return tid
 
     def update_transaction(self, tquantity, ttotal, pid, sid, rid, uid, tid):
@@ -124,34 +126,40 @@ class TransactionDAO:
         cursor.execute(self.query_dict["update_transaction"], (tquantity, ttotal, pid, sid, rid, uid, tid))
         tid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return tid
     #needed for jsonify
     def get_transaction_date(self, tid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_transaction_date"], (tid,))
         tdate = cursor.fetchone()
+        cursor.close()
         return tdate
     def delete_transaction(self, tid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["delete_transaction"], (tid,))
         self.conn.commit()
+        cursor.close()
         return tid
     #----------------------dao for incoming----------------------
     def get_all_incoming(self):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_all_incoming"])
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def get_incoming_by_id(self, incid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_incoming_by_id"], (incid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
     def get_tid_from_incoming(self, incid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_tid_from_incoming"], (incid,))
         tid = cursor.fetchone()[0]
+        cursor.close()
         return tid
 
     def insert_incoming(self, wid, tid): #modify attributes
@@ -159,18 +167,21 @@ class TransactionDAO:
         cursor.execute(self.query_dict["insert_incoming"], (wid, tid))
         incid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return incid
     
     def update_incoming(self, incid, wid, tid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["update_incoming"], (wid, tid, incid))
         self.conn.commit()
+        cursor.close()
         return incid
        
     def get_warehouse_least_cost(self, wid, amount):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_least_cost"], (wid, amount))
         result = [row for row in cursor]
+        cursor.close()
         return result
 
     #for debugging, will be unused
@@ -178,6 +189,7 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["delete_incoming"], (incid,))
         self.conn.commit()
+        cursor.close()
         return incid
     
     #----------------------dao for outgoing----------------------
@@ -185,12 +197,14 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_all_outgoing"])
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def get_outgoing_by_id(self, outid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_outgoing_by_id"], (outid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def insert_outgoing(self, obuyer, wid, tid):
@@ -198,6 +212,7 @@ class TransactionDAO:
         cursor.execute(self.query_dict["insert_outgoing"], (obuyer,wid, tid))
         outid = cursor.fetchone()[0]
         self.conn.commit()
+        cursor.close()
         return outid
     
     #TODO(xavier)
@@ -205,6 +220,7 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["update_outgoing"], (wid, tid, incid))
         self.conn.commit()
+        cursor.close()
         return
 
     #for debugging, will be unused
@@ -216,12 +232,14 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_all_exchange"])
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def get_exchange_by_id(self, tranid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["get_incoming_by_id"], (tranid,))
         result = [row for row in cursor]
+        cursor.close()
         return result
     
     def insert_exchange(self):
