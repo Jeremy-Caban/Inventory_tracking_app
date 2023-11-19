@@ -11,6 +11,7 @@ class SupplierHandler:
         result['pid'] = row[0]
         result['pprice'] = row[1]
         result['ptype'] = row[2]
+        result['pname'] = row[3]
         return result
     
     def build_supplier_attributes(self, sid, sname, scity, sphone, semail):

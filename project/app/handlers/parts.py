@@ -8,13 +8,15 @@ class PartHandler:
         result['pid'] = row[0]
         result['pprice'] = row[1]
         result['ptype'] = row[2]
+        result['pname'] = row[3]
         return result
 
-    def build_part_attributes(self, pid, pprice, ptype):
+    def build_part_attributes(self, pid, pprice, ptype, pname):
         result = {}
         result['pid'] = pid
         result['pprice'] = pprice
         result['ptype'] = ptype
+        result['pname'] = pname
         return result
 
     def getAllParts(self):
@@ -38,6 +40,7 @@ class PartHandler:
     def searchParts(self, args):
         pprice = args.get("pprice")
         ptype = args.get("ptype")
+        pname = args.get("pname")
         dao = PartsDAO()
         parts_list = []
         if (len(args) == 2) and pprice and ptype:
@@ -46,6 +49,8 @@ class PartHandler:
             parts_list = dao.getPartsByPrice(pprice)
         elif (len(args) == 1) and ptype:
             parts_list = dao.getPartsByType(ptype)
+        elif (len(args) == 1) and pname:
+            parts_list = dao.getPartsByName(pname)
         else:
             return jsonify(Error="Malformed query string"), 400
 
@@ -57,29 +62,31 @@ class PartHandler:
 
     def insertPart(self, form):
         print("form: ", form, 'len ', len(form.request))
-        if len(form) != 2:
+        if len(form) != 3:
             return jsonify(Error="Malformed post request"), 400
         else:
             pprice = form["pprice"]
             ptype = form["ptype"]
-            if pprice and ptype:
+            pname = form["pname"]
+            if pprice and ptype and pname:
                 dao = PartsDAO()
-                pid = dao.insert(pprice, ptype)
+                pid = dao.insert(pprice, ptype, pname)
                 result = self.build_part_attributes(
-                    pid, pprice, ptype
+                    pid, pprice, ptype, pname
                 )
                 return jsonify(Part=result), 201
             else:
                 return jsonify(Error="Unexpected attributes in post request"), 400
 
     def insertPartJson(self, json):
-        if len(json)!=2: return jsonify(Error="Malformed Post request"), 400
+        if len(json) != 3: return jsonify(Error="Malformed Post request"), 400
         pprice = json['pprice']
         ptype = json['ptype']
-        if pprice and ptype:
+        pname = json['pname']
+        if pprice and ptype and pname:
             dao = PartsDAO()
-            pid = dao.insert(pprice,ptype)
-            result = self.build_part_attributes(pid, pprice, ptype)
+            pid = dao.insert(pprice, ptype, pname)
+            result = self.build_part_attributes(pid, pprice, ptype, pname)
             return jsonify(Part=result), 201
         else:
             return jsonify(Error="Unexpected attributes in post request"), 400
@@ -97,14 +104,15 @@ class PartHandler:
         if not dao.getPartById(pid):
             return jsonify(Error="Part not found."), 404
         else:
-            if len(json) != 2:
+            if len(json) != 3:
                 return jsonify(Error="Malformed update request"), 400
             else:
                 pprice = json['pprice']
                 ptype = json['ptype']
-                if pprice and ptype:
-                    dao.update(pid, pprice, ptype)
-                    result = self.build_part_attributes(pid, pprice, ptype)
+                pname = json['pname']
+                if pprice and ptype and pname:
+                    dao.update(pid, pprice, ptype, pname)
+                    result = self.build_part_attributes(pid, pprice, ptype, pname)
                     return jsonify(Part=result), 200
                 else:
                     return jsonify(Error="Unexpected attributes in update request"), 400

@@ -55,10 +55,19 @@ class PartsDAO:
             result.append(row)
         return result
 
-    def insert(self, pprice, ptype):
+    def getPartsByName(self, pname):
         cursor = self.conn.cursor()
-        query = "insert into parts(pprice, ptype) values (%s, %s) returning pid;"
-        cursor.execute(query, (pprice, ptype))
+        query = "select * from parts where pname = %s;"
+        cursor.execute(query, (pname,))
+        result = []
+        for row in cursor:
+            result.append(row)
+        return result
+
+    def insert(self, pprice, ptype, pname):
+        cursor = self.conn.cursor()
+        query = "insert into parts(pprice, ptype, pname) values (%s, %s, %s) returning pid;"
+        cursor.execute(query, (pprice, ptype, pname))
         pid = cursor.fetchone()[0]
         self.conn.commit()
         return pid
@@ -70,9 +79,9 @@ class PartsDAO:
         self.conn.commit()
         return pid
 
-    def update(self, pid, pprice, ptype):
+    def update(self, pid, pprice, ptype, pname):
         cursor = self.conn.cursor()
-        query = "update parts set pprice = %s, ptype = %s where pid = %s;"
-        cursor.execute(query, (pprice, ptype, pid))
+        query = "update parts set pprice = %s, ptype = %s, pname = %s where pid = %s;"
+        cursor.execute(query, (pprice, ptype, pname, pid))
         self.conn.commit()
         return pid
