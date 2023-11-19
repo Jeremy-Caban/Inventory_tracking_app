@@ -17,6 +17,10 @@ class WarehouseHandler:
                 'wphone':wphone
                 }
 
+    def build_most_racks_dict(self, rows):
+        keys = ['wid', 'count']
+        return dict(zip(keys, rows))
+
     def get_all_warehouses(self):
         dao = WarehouseDAO()
         warehouse_list = dao.get_all_warehouses()
@@ -29,6 +33,7 @@ class WarehouseHandler:
         if not row:
             return jsonify(Error = "Warehouse not found"), 404
         else:
+            row = row[0]
             warehouse = self.build_warehouse_dict(row)
             return jsonify(Warehouse = warehouse)
 
@@ -48,7 +53,7 @@ class WarehouseHandler:
         if not rack_list:
             return jsonify(Error = 'Warehouses not found'), 404
         else:
-            result = [self.build_warehouse_dict(row) for row in rack_list]
+            result = [self.build_most_racks_dict(row) for row in rack_list]
             return jsonify(Warehouses=result)
 
     def insert_warehouse(self, json):

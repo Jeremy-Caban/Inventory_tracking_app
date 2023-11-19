@@ -35,15 +35,13 @@ class WarehouseDAO:
 
     def get_warehouse_most_racks(self,amount:int):
         cursor = self.conn.cursor()
-        query = """select * from (
-                    select wid, count(rid) as count
-                    from rack natural inner join warehouse
-                    group by wid
-            ) as list
-                natural inner join warehouse
-                order by list.count desc
-                limit %s;
-        """
+        query = '''
+        select wid, count(rid)
+        from rack natural inner join warehouse
+        group by wid
+        order by count(rid) desc
+        limit %s
+        '''
         cursor.execute(query, (amount,))
         result = [row for row in cursor]
         return result
