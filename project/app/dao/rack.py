@@ -44,6 +44,26 @@ class RackDAO:
         result = [row for row in cursor]
         return result
 
+    #TODO prob belongs in parts
+    #weird return bc of its being built as regular parts
+    def get_warehouse_rack_bottom_material(self, wid, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select ptype,count(p.ptype)
+        from (
+            select * from
+            warehouse w natural inner join rack r
+            where w.wid = %s
+        ) as racks natural inner join parts p
+       group by p.ptype
+       order by count(p.ptype)
+       limit %s
+        '''
+        cursor.execute(query,(wid, amount))
+        self.conn.commit()
+        result = [row for row in cursor]
+        return result
+
     def insert(self, capacity, quantity, pid, wid):
         cursor= self.conn.cursor()
         query = '''
