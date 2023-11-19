@@ -30,9 +30,14 @@ class TransactionDAO:
                             sid = %s, rid = %s, uid = %s
                             where tid = %s;
                             ''',
+        #query needed for jsonify
+        "get_transaction_date":'''
+                            select tdate from transaction where tid = %s;
+                            ''',
+        
         #queries for incoming-----
         "get_all_incoming":'''
-                            select * from incomingt;
+                            select * from incomingt natural inner join transaction where incid = %s;
                             ''',
         "get_incoming_by_id":'''
                             select * from incomingt natural inner join transaction where incid = %s;
@@ -105,6 +110,12 @@ class TransactionDAO:
         tid = cursor.fetchone()[0]
         self.conn.commit()
         return tid
+    #needed for jsonify
+    def get_transaction_date(self, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_transaction_date"], (tid,))
+        tdate = cursor.fetchone()
+        return tdate
     #----------------------dao for incoming----------------------
     def get_all_incoming(self):
         cursor = self.conn.cursor()
@@ -130,7 +141,7 @@ class TransactionDAO:
         cursor.execute(self.query_dict["update_incoming"], (wid, tid, incid))
         self.conn.commit()
         return incid
-        
+       
     #for debugging, will be unused
     def delete_incoming(self, tid):
         return
