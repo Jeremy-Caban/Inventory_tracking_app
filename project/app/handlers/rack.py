@@ -120,6 +120,8 @@ class RackHandler:
             return jsonify(Error='Rack capacity cannot be 0.')
         if pid is not None and PartsDAO().getPartById(pid) is None:
             return jsonify(Error='Part does not exist'), 404
+        if capacity < quantity:
+            return jsonify(Error='Quantity cannot be greater than capacity.'),400
         dao.update(rid, capacity, quantity, pid, wid)
         result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
         return jsonify(Rack=result), 201
