@@ -85,6 +85,14 @@ class UserDAO:
             result.append(row)
         return result
 
+    def getUserWarehouse(self, uid):
+        cursor = self.conn.cursor()
+        query = 'select wid from public.user u where u.uid = %s;'
+        cursor.execute(query, (uid,))
+        #don't index, might be None
+        wid = cursor.fetchone()
+        return wid
+
     def insert(self, fname, lname, wid, uemail=None, uphone=None):
         cursor = self.conn.cursor()
         query = '''
