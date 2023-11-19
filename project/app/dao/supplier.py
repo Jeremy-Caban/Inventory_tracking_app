@@ -169,4 +169,18 @@ class SupplierDAO:
         self.conn.commit()
         return sid, pid
 
+    def get_top_suppliers_for_warehouse(self, wid, amount):
+        cursor = self.conn.cursor()
+        query = """
+        select sid, count(incid)
+        from incomingt natural inner join transaction
+        where wid = %s
+        group by sid
+        order by count(incid)
+        limit %s
+        """
+        cursor.execute(query, (wid, amount))
+        result = [row for row in cursor]
+        return result
+
 # -------- end of supplies -------------

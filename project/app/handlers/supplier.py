@@ -2,6 +2,8 @@ from unittest import result
 from flask import jsonify
 from app.dao.supplier import SupplierDAO
 from app.dao.parts import PartsDAO
+from app.dao.warehouse import WarehouseDAO
+from app.dao.user import UserDAO
 
 
 class SupplierHandler:
@@ -13,6 +15,10 @@ class SupplierHandler:
         result['ptype'] = row[2]
         result['pname'] = row[3]
         return result
+
+    def build_most_dict(self, rows):
+        keys = ['sid','count']
+        return dict(zip(keys, rows))
     
     def build_supplier_attributes(self, sid, sname, scity, sphone, semail):
         return {
@@ -175,3 +181,18 @@ class SupplierHandler:
         supplies_dict = self.build_supplies_attributes(supid, stock, sid, pid)
 
         return jsonify(Supplies = supplies_dict)
+
+    def get_top_suppliers_for_warehouse(self, wid, json, amount=3):
+        dao = SupplierDAO()
+        if not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error='Warehouse not found'), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error='User not found'), 404
+        if user_warehouse_tuple[0] != wid:
+            return jsonify(Error='User has no access to warehouse.'), 403
+        supplier_list = dao.get_top_suppliers_for_warehouse(wid, amount)
+        #TODO check if right result
+        result = [self.build_most_dict(row) for row in supplier_list]
+        return jsonify(Suppliers=result)
