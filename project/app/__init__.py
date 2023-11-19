@@ -6,6 +6,6 @@ app = Flask(__name__)
 # Apply CORS to this app
 CORS(app)
 
-from app.routes import parts, test2, warehouse, statistics, rack, supplier, user
+from app.routes import parts, test2, warehouse, statistics, rack, supplier, user, transaction
 
 print('imported routes')

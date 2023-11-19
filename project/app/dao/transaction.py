@@ -1,0 +1,185 @@
+from app.config import dbconfig
+import psycopg2
+
+#Jeremy at work here :)
+
+class TransactionDAO:
+    def __init__(self):
+        self.conn = psycopg2.connect(
+            user=dbconfig.user,
+            password=dbconfig.password,
+            host=dbconfig.host,
+            dbname=dbconfig.dbname,
+            port=dbconfig.port,
+        )
+        print(self.conn)
+
+    query_dict = {
+        #queries for master table-----
+        #Todo:
+        "get_all_transactions":'''
+                                select * from transaction;
+                                ''',
+
+        "insert_transaction": '''insert into transaction(tdate, tquantity, ttotal, pid, sid, rid, uid)
+                                values(now(), %s, %s, %s, %s, %s, %s) returning tid;
+                            ''',
+                                
+        "update_transaction":'''
+                            update transaction set tdate = now(), tquantity = %s, ttotal = %s, pid = %s,
+                            sid = %s, rid = %s, uid = %s
+                            where tid = %s;
+                            ''',
+        #queries for incoming-----
+        "get_all_incoming":'''
+                            select * from incomingt;
+                            ''',
+        "get_incoming_by_id":'''
+                            select * from incomingt natural inner join transaction where incid = %s;
+                            ''',
+        "insert_incoming":'''
+                            insert into incomingt(wid, tid)
+                            values (%s, %s) returning incid;
+                            ''',
+        "update_incoming":'''
+                            update incomingt set <write new vals here> where incid = %s;
+                            ''',
+        "delete_incoming":'''
+                            delete from incomingt where incid = %s;
+                            ''',
+        #queries for outgoing-----
+        "get_all_outgoing":'''
+                            select * from outgoingt;
+                            ''',
+        "get_outgoing_by_id":'''
+                            select * from outgoingt where outid = %s;
+                            ''',
+        "insert_outgoing":'''
+                            insert into outgoingt(obuyer, wid, tid)
+                            values (%s, %s, %s) returning outid;
+                            ''',
+        "update_outgoing":'''
+                            update outgoingt set <write new vals here> where outid = %s;
+                            ''',
+        "delete_outgoing":'''
+                            delete from outgoingt where outid = %s;
+                            ''',
+        #queries for exchange-----
+        "get_all_exchange":'''
+                            select * from transfert;
+                            ''',
+        "get_exchange_by_id":'''
+                            select * from transfert where tranid = %s;
+                            ''',
+        "insert_exchange":'''
+                            insert into transfert(attributes here)
+                            values (%s, %s, %s, %s) returning tranid;
+                            ''',
+        "update_exchange":'''
+                            update transfert set <write new vals here> where tranid = %s;
+                            ''',
+        "delete_exchange":'''
+                            delete from transfert where tranid = %s;
+                            '''
+        
+    }
+
+
+    #----------------------dao for master----------------------
+    def get_all_transactions(self):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_all_transactions"])
+        result = [row for row in cursor]
+        return result
+    
+    def insert_transaction(self, tquantity, ttotal, pid, sid, rid, uid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["insert_transaction"], (tquantity, ttotal, pid, sid, rid, uid))
+        tid = cursor.fetchone()[0]
+        self.conn.commit()
+        return tid
+
+    def update_transaction(self, tquantity, ttotal, pid, sid, rid, uid, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["update_transaction"], (tquantity, ttotal, pid, sid, rid, uid, tid))
+        tid = cursor.fetchone()[0]
+        self.conn.commit()
+        return tid
+    #----------------------dao for incoming----------------------
+    def get_all_incoming(self):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_all_incoming"])
+        result = [row for row in cursor]
+        return result
+    
+    def get_incoming_by_id(self, incid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_incoming_by_id"], (incid,))
+        result = [row for row in cursor]
+        return result
+    
+    def insert_incoming(self, wid, tid): #modify attributes
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["insert_incoming"], (wid, tid))
+        incid = cursor.fetchone()[0]
+        self.conn.commit()
+        return incid
+    
+    def update_incoming(self, incid, wid, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["update_incoming"], (wid, tid, incid))
+        self.conn.commit()
+        return incid
+        
+    #for debugging, will be unused
+    def delete_incoming(self, tid):
+        return
+    
+    #----------------------dao for outgoing----------------------
+    def get_all_outgoing(self):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_all_outgoing"])
+        result = [row for row in cursor]
+        return result
+    
+    def get_outgoing_by_id(self, outid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_outgoing_by_id"], (outid,))
+        result = [row for row in cursor]
+        return result
+    
+    def insert_outgoing(self):
+        return
+    
+    def update_outgoing(self, tid):
+        return
+    #for debugging, will be unused
+    def delete_outgoing(self, tid):
+        return
+
+    #----------------------dao for exchange----------------------
+    def get_all_exchange(self):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_all_exchange"])
+        result = [row for row in cursor]
+        return result
+    
+    def get_exchange_by_id(self, tranid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_incoming_by_id"], (tranid,))
+        result = [row for row in cursor]
+        return result
+    
+    def insert_exchange(self):
+        return
+    
+    def update_exchange(self, tranid):
+        return
+    #for debugging, will be unused
+    def delete_exchange(self, tid):
+        return
+    
+    #-----For Master Table-----
+
+    # def insert_to_master_table(self, tid):
+    #     return
