@@ -33,6 +33,19 @@ class WarehouseDAO:
         result = [row for row in cursor]
         return result
 
+    def get_warehouse_most_incoming(self,amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select wid, count(incid)
+        from warehouse natural inner join incomingt
+        group by wid
+        order by count(incid) desc
+        limit %s;
+        '''
+        cursor.execute(query, (amount,))
+        result = [row for row in cursor]
+        return result
+
     def get_warehouse_most_racks(self,amount:int):
         cursor = self.conn.cursor()
         query = '''
@@ -40,7 +53,7 @@ class WarehouseDAO:
         from rack natural inner join warehouse
         group by wid
         order by count(rid) desc
-        limit %s
+        limit %s;
         '''
         cursor.execute(query, (amount,))
         result = [row for row in cursor]

@@ -17,7 +17,8 @@ class WarehouseHandler:
                 'wphone':wphone
                 }
 
-    def build_most_racks_dict(self, rows):
+    #Used for routes where we want wid and a count of most something
+    def build_most_dict(self, rows):
         keys = ['wid', 'count']
         return dict(zip(keys, rows))
 
@@ -53,8 +54,14 @@ class WarehouseHandler:
         if not rack_list:
             return jsonify(Error = 'Warehouses not found'), 404
         else:
-            result = [self.build_most_racks_dict(row) for row in rack_list]
+            result = [self.build_most_dict(row) for row in rack_list]
             return jsonify(Warehouses=result)
+
+    def get_warehouse_most_incoming(self, amount=5):
+        dao = WarehouseDAO()
+        warehouse_list = dao.get_warehouse_most_incoming(amount)
+        result = [self.build_most_dict(row) for row in warehouse_list]
+        return jsonify(Warehouses=result)
 
     def insert_warehouse(self, json):
         wname = json.get('wname', None)
