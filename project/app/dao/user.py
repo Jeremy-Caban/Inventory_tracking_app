@@ -85,21 +85,34 @@ class UserDAO:
             result.append(row)
         return result
 
-    def insert(self, fname, lname, uemail=None, uphone=None):
+    def getUserWarehouse(self, uid):
+        cursor = self.conn.cursor()
+        query = 'select wid from public.user u where u.uid = %s;'
+        cursor.execute(query, (uid,))
+        #don't index, might be None
+        wid = cursor.fetchone()
+        return wid
+
+    def insert(self, fname, lname, wid, uemail=None, uphone=None):
         cursor = self.conn.cursor()
         query = '''
-                insert into public.user(fname, lname, uemail, uphone) as u
-                values (%s, %s, %s, %s) returning uid;
+                insert into
+                public.user(fname, lname, uemail, uphone, wid)
+                values (%s, %s, %s, %s, %s) returning uid;
                 '''
-        cursor.execute(query, (fname, lname, uemail, uphone))
+        cursor.execute(query, (fname, lname, uemail, uphone, wid))
         uid = cursor.fetchone()[0]
         self.conn.commit()
         return uid
 
-    def update(self, uid, fname, lname, uemail, uphone):
+    def update(self, uid, fname, lname, wid, uemail, uphone):
         cursor = self.conn.cursor()
-        query = "update public.user as u set fname = %s, lname = %s, uemail = %s, uphone = %s where uid = %s;"
-        cursor.execute(query, (fname, lname, uemail, uphone, uid))
+        query = '''
+        update public.user as u
+        set fname = %s, lname = %s, uemail = %s, uphone = %s, wid = %s
+        where uid = %s;
+        '''
+        cursor.execute(query, (fname, lname, uemail, uphone, wid, uid))
         self.conn.commit()
         return uid
 

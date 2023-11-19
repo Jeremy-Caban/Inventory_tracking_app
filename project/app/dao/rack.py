@@ -26,24 +26,42 @@ class RackDAO:
         result = [row for row in cursor]
         return result
 
-    def insert(self, capacity, wid):
+    def get_warehouse_racks_lowstock(self,wid,amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select rid, capacity, quantity, pid, wid
+        from (
+           select * from
+           warehouse w natural inner join rack r
+           where w.wid = %s
+        ) as racks
+        where racks.quantity < ( racks.capacity * 0.25 )
+        order by racks.quantity
+        limit %s;
+        '''
+        cursor.execute(query, (wid,amount))
+        self.conn.commit()
+        result = [row for row in cursor]
+        return result
+
+    def insert(self, capacity, quantity, pid, wid):
         cursor= self.conn.cursor()
         query = '''
-           insert into rack(capacity, wid)
-           values (%s, %s) returning rid;
+           insert into rack(capacity, wid, quantity, pid)
+           values (%s, %s, %s, %s) returning rid;
         '''
-        cursor.execute(query, (capacity, wid))
+        cursor.execute(query, (capacity, wid, quantity, pid))
         rid = cursor.fetchone()[0]
         self.conn.commit()
         return rid
 
-    def update(self, rid, capacity, wid):
+    def update(self, rid, capacity, quantity, pid, wid):
         cursor = self.conn.cursor()
         query = '''
-            update rack set capacity = %s, wid = %s
+            update rack set capacity = %s, wid = %s, quantity = %s, pid = %s
             where rid = %s;
         '''
-        cursor.execute(query, (capacity, wid, rid))
+        cursor.execute(query, (capacity, wid, quantity, pid, rid))
         self.conn.commit()
         return rid
 
@@ -55,7 +73,7 @@ class RackDAO:
         cursor.execute(query, (rid,))
         self.conn.commit()
         return rid
-    
+
     def get_parts_in_rack(self, rid):
         cursor = self.conn.cursor()
         query = '''

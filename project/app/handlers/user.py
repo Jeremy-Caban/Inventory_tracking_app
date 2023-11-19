@@ -1,5 +1,6 @@
 from flask import jsonify
 from app.dao.user import UserDAO
+from app.dao.warehouse import WarehouseDAO
 
 
 # Leamsi working here
@@ -12,15 +13,17 @@ class UserHandler:
         result['lname'] = row[2]
         result['uemail'] = row[3]
         result['uphone'] = row[4]
+        result['wid'] = row[5]
         return result
 
-    def build_user_attributes(self, uid, fname, lname, uemail, uphone):
+    def build_user_attributes(self, uid, fname, lname, uemail, uphone, wid):
         result = {}
         result['uid'] = uid
         result['fname'] = fname
         result['lname'] = lname
         result['uemail'] = uemail
         result['uphone'] = uphone
+        result['wid'] = wid
         return result
 
     def getAllUsers(self):
@@ -36,7 +39,7 @@ class UserHandler:
         dao = UserDAO()
         row = dao.getUserById(uid)
         if not row:
-            return jsonify(Error="Part Not Found"), 404
+            return jsonify(Error="User Not Found"), 404
         else:
             user = self.build_user_dict(row)
             return jsonify(User=user)
@@ -68,37 +71,21 @@ class UserHandler:
             result_list.append(result)
         return jsonify(User=result_list)
 
-    def insertUser(self, form):
-        print("form: ", form, 'len ', len(form.request))
-        if len(form) != 4:
-            return jsonify(Error="Malformed post request"), 400
-        else:
-            fname = form["fname"]
-            lname = form["lname"]
-            uemail = form["uemail"]
-            uphone = form["uphone"]
-
-            if fname and lname and uemail and uphone:
-                dao = UserDAO()
-                uid = dao.insert(fname, lname, uemail, uphone)
-                result = self.build_user_attributes(
-                    uid, fname, lname, uemail, uphone
-                )
-                return jsonify(User=result), 201
-            else:
-                return jsonify(Error="Unexpected attributes in post request"), 400
-
     def insertUserJson(self, json):
-        if len(json) != 4: return jsonify(Error="Malformed Post request"), 400
+        if len(json) != 5: return jsonify(Error="Malformed Post request"), 400
         fname = json['fname']
         lname = json['lname']
         uemail = json['uemail']
         uphone = json['uphone']
+        wid = json['wid']
+        warehouse_dao = WarehouseDAO()
+        if not warehouse_dao.get_warehouse_by_id(wid):
+            return jsonify(Error = 'Warehouse does not exist'), 400
 
-        if fname and lname and uemail and uphone:
+        if fname and lname and uemail and uphone and wid:
             dao = UserDAO()
-            uid = dao.insert(fname, lname, uemail, uphone)
-            result = self.build_user_attributes(uid, fname, lname, uemail, uphone)
+            uid = dao.insert(fname, lname, wid, uemail, uphone)
+            result = self.build_user_attributes(uid, fname, lname, uemail, uphone, wid)
             return jsonify(User=result), 201
         else:
             return jsonify(Error="Unexpected attributes in post request"), 400
@@ -106,7 +93,7 @@ class UserHandler:
     def deleteUser(self, uid):
         dao = UserDAO()
         if not dao.getUserById(uid):
-            return jsonify(Error="Part not found."), 404
+            return jsonify(Error="User not found."), 404
         else:
             dao.delete(uid)
             return jsonify(DeleteStatus="OK"), 200
@@ -114,18 +101,22 @@ class UserHandler:
     def updateUser(self, uid, json):
         dao = UserDAO()
         if not dao.getUserById(uid):
-            return jsonify(Error="Part not found."), 404
+            return jsonify(Error="User not found."), 404
         else:
-            if len(json) != 4:
+            if len(json) != 5:
                 return jsonify(Error="Malformed update request"), 400
             else:
                 fname = json['fname']
                 lname = json['lname']
                 uemail = json['uemail']
                 uphone = json['uphone']
-                if fname and lname and uemail and uphone:
-                    dao.update(uid, fname, lname, uemail, uphone)
-                    result = self.build_user_attributes(uid, fname, lname, uemail, uphone)
+                wid = json['wid']
+                warehouse_dao = WarehouseDAO()
+                if not warehouse_dao.get_warehouse_by_id(wid):
+                    return jsonify(Error = 'Warehouse does not exist'), 400
+                if fname and lname and uemail and uphone and wid:
+                    dao.update(uid, fname, lname, wid, uemail, uphone)
+                    result = self.build_user_attributes(uid, fname, lname, uemail, uphone, wid)
                     return jsonify(User=result), 200
                 else:
                     return jsonify(Error="Unexpected attributes in update request"), 400

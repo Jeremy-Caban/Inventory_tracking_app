@@ -1,5 +1,6 @@
 from app import app
 from app.handlers.warehouse import WarehouseHandler
+from app.handlers.rack import RackHandler
 from flask import jsonify, request
 
 #TODO(xavier) Finish implementing all warehouse routes and ohter functionality.
@@ -27,6 +28,16 @@ def get_warehouse_by_id(wid):
 def get_warehouse_by_name(wname):
     if request.method == 'GET':
         return WarehouseHandler().get_warehouse_by_name(str(wname))
+    else:
+        return jsonify(Error = "Not implemented"), 501
+
+@app.route('/warehouse/<int:wid>/rack/lowstock', methods=['POST'])
+def get_warehouse_rack_lowstock(wid):
+    if request.method == "POST":
+        print(request.json)
+        if not request.json or request.json.get('User_id',None) is None:
+            return jsonify(Error = "User ID not provided."), 403
+        return RackHandler().get_warehouse_rack_lowstock(wid, request.json)
     else:
         return jsonify(Error = "Not implemented"), 501
 
