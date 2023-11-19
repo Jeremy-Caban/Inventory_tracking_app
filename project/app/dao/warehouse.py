@@ -78,3 +78,13 @@ class WarehouseDAO:
         cursor.execute(query, (wid,))
         self.conn.commit()
         return wid
+
+    #queries needed for validation
+    def get_warehouse_budget(self, wid):
+        cursor = self.conn.cursor()
+        query = '''
+            select budget from warehouse as w where w.wid = %s;
+        '''
+        cursor.execute(query, (wid,))
+        budget = cursor.fetchone()
+        return budget

@@ -85,3 +85,13 @@ class PartsDAO:
         cursor.execute(query, (pprice, ptype, pname, pid))
         self.conn.commit()
         return pid
+
+    #queries needed for validation
+    def get_part_price(self, pid):
+        cursor = self.conn.cursor()
+        query = '''
+            select pprice from parts as p where p.pid = %s;
+        '''
+        cursor.execute(query, (pid,))
+        pprice = cursor.fetchone()
+        return pprice
