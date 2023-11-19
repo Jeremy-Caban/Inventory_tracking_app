@@ -30,6 +30,9 @@ class TransactionDAO:
                             sid = %s, rid = %s, uid = %s
                             where tid = %s;
                             ''',
+        "delete_transaction":'''
+                            delete from transaction where tid = %s;
+                            ''',
         #query needed for jsonify
         "get_transaction_date":'''
                             select tdate from transaction where tid = %s;
@@ -41,6 +44,9 @@ class TransactionDAO:
                             ''',
         "get_incoming_by_id":'''
                             select * from incomingt natural inner join transaction where incid = %s;
+                            ''',
+        "get_tid_from_incoming":'''
+                            select tid from incomingt where incid = %s;
                             ''',
         "insert_incoming":'''
                             insert into incomingt(wid, tid)
@@ -125,6 +131,11 @@ class TransactionDAO:
         cursor.execute(self.query_dict["get_transaction_date"], (tid,))
         tdate = cursor.fetchone()
         return tdate
+    def delete_transaction(self, tid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["delete_transaction"], (tid,))
+        self.conn.commit()
+        return tid
     #----------------------dao for incoming----------------------
     def get_all_incoming(self):
         cursor = self.conn.cursor()
@@ -137,7 +148,12 @@ class TransactionDAO:
         cursor.execute(self.query_dict["get_incoming_by_id"], (incid,))
         result = [row for row in cursor]
         return result
-    
+    def get_tid_from_incoming(self, incid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["get_tid_from_incoming"], (incid,))
+        tid = cursor.fetchone()[0]
+        return tid
+
     def insert_incoming(self, wid, tid): #modify attributes
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["insert_incoming"], (wid, tid))
@@ -158,8 +174,11 @@ class TransactionDAO:
         return result
 
     #for debugging, will be unused
-    def delete_incoming(self, tid):
-        return
+    def delete_incoming(self, incid):
+        cursor = self.conn.cursor()
+        cursor.execute(self.query_dict["delete_incoming"], (incid,))
+        self.conn.commit()
+        return incid
     
     #----------------------dao for outgoing----------------------
     def get_all_outgoing(self):

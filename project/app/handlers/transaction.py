@@ -189,8 +189,18 @@ class TransactionHandler:
     
 
     #DELETE (ONLY FOR DEBUGGING)
-    def delete_incoming(self):
-        return
+    def delete_incoming(self, incid):
+        dao = TransactionDAO()
+        if not dao.get_incoming_by_id(incid):
+            return jsonify(Error="Incoming transaction not found."), 404
+        else:
+            tid = dao.get_tid_from_incoming(incid)
+            print("incoming id: " + str(incid))
+            print("transaction id: "+ str(tid))
+            ret_incid = dao.delete_incoming(incid)
+            ret_tid = dao.delete_transaction(tid)
+            print("Removed incoming: "+str(incid)+" and Transaction: "+str(tid))
+            return jsonify(DeleteStatus="OK"), 200
     
     #----------------------CRUD for outgoing----------------------
 
