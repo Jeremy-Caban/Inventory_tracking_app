@@ -98,6 +98,20 @@ class WarehouseDAO:
         cursor.close()
         return wid
 
+    def get_warehouse_least_outgoing(self, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select wid, count(outid)
+        from warehouse natural inner join outgoingt
+        group by wid
+        order by count(outid)
+        limit %s
+        '''
+        cursor.execute(query, (amount,))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+
     #queries needed for validation
     def get_warehouse_budget(self, wid):
         cursor = self.conn.cursor()

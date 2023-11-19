@@ -63,6 +63,14 @@ class WarehouseHandler:
         result = [self.build_most_dict(row) for row in warehouse_list]
         return jsonify(Warehouses=result)
 
+    def get_warehouse_least_outgoing(self, amount=3):
+        dao = WarehouseDAO()
+        warehouse_list = dao.get_warehouse_least_outgoing(amount)
+        #use most even though its least, works the same(bad name)
+        result = [self.build_most_dict(row) for row in warehouse_list]
+        return jsonify(Warehouses=result)
+
+
     def insert_warehouse(self, json):
         wname = json.get('wname', None)
         wcity = json.get('wcity', None)
