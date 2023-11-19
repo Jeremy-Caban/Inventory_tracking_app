@@ -153,3 +153,11 @@ class RackDAO:
         capacity = cursor.fetchone()
         return capacity
 
+    def get_rack_quantity(self, rid):
+        cursor = self.conn.cursor()
+        query = '''
+            select quantity from rack as r where r.rid = %s;
+        '''
+        cursor.execute(query, (rid,))
+        quantity = cursor.fetchone()
+        return quantity

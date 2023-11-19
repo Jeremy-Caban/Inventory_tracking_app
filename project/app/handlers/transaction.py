@@ -46,33 +46,43 @@ class TransactionHandler:
         
         # validate user belongs to warehouse
         user_wid = user_dao.getUserWarehouse(uid)
-        if user_wid != wid : return False
+        #print(user_wid)
+        #print("User Belongs to Warehouse: "+user_wid != wid)
+        if user_wid[0] != wid : return False
 
         # validate rack belongs to warehouse
         rack_wid = rack_dao.get_rack_warehouse(rid)
-        if rack_wid != wid: return False
+        #print("Rack belongs to warehouse: "+rack_wid != wid)
+        #print(rack_wid)
+        if rack_wid[0] != wid: return False
 
         # validate the part belongs to rack
+
         rack_pid = rack_dao.get_rack_part(rid)
-        if rack_pid != pid: return False
+        #print("Part belongs to rack: "+rack_pid != pid)
+        if rack_pid[0] != pid: return False
         
         # validate sid supplies part
         supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
+        #print("Supplier provide part: "+ supid)
         if not supid: return False
         
         # validate supplier stock
         sup_stock = supplier_dao.get_supplier_supplies_stock_by_supid(supid)[0] # this returns a list
+        #print("Valid Stock: "+sup_stock < tquantity)
         if sup_stock < tquantity: return False
 
-        # # validate rack capacity
-        # rack_capacity = rack_dao.get_rack_capacity(rid)
-        # curr_rack_quantity = rack_dao.get_rack_quantity(rid)
-        # free_space = rack_capacity-curr_rack_quantity #verify if this is the correct assumption to make
-        # if free_space < tquantity: return False
+        # validate rack capacity
+        rack_capacity = rack_dao.get_rack_capacity(rid)[0]
+        curr_rack_quantity = rack_dao.get_rack_quantity(rid)[0]
+        free_space = rack_capacity-curr_rack_quantity #verify if this is the correct assumption to make
+        #print("Free space: "+free_space < tquantity)
+        if free_space < tquantity: return False
         
         # validate warehouse budget
-        ware_budget = warehouse_dao.get_warehouse_budget(wid)
-        total_cost = tquantity*part_dao.get_part_price(pid)
+        ware_budget = warehouse_dao.get_warehouse_budget(wid)[0]
+        total_cost = tquantity*part_dao.get_part_price(pid)[0]
+        
         if ware_budget < total_cost: return False
         if total_cost != ttotal: return False
         
@@ -118,9 +128,9 @@ class TransactionHandler:
                 if self.validate(pid, sid, rid, uid, wid, tquantity, ttotal): #check if valid data is sent  
                     #daos
                     transaction_dao = incoming_dao = TransactionDAO()
-                    warehouse_dao = WarehouseDAO()
-                    rack_dao = RackDAO()
-                    supplier_dao = SupplierDAO()
+                    # warehouse_dao = WarehouseDAO()
+                    # rack_dao = RackDAO()
+                    # supplier_dao = SupplierDAO()
                     #create entry in master transactions
                     tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid, uid)
                     #create entry in incoming transactions
