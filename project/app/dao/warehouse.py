@@ -84,5 +84,14 @@ class WarehouseDAO:
             select budget from warehouse as w where w.wid = %s;
         '''
         cursor.execute(query, (wid,))
-        budget = cursor.fetchone()
+        budget = cursor.fetchone()[0]
         return budget
+    
+    def set_warehouse_budget(self, wid, new_budget):
+        cursor = self.conn.cursor()
+        query = '''
+            update warehouse set budget = %s where wid = %s;
+        '''
+        cursor.execute(query, (new_budget, wid))
+        self.conn.commit()
+        return wid

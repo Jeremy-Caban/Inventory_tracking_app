@@ -130,7 +130,7 @@ class SupplierDAO:
         select supid from supplies where sid = %s and pid = %s;
         """
         cursor.execute(query, (sid, pid))
-        result = cursor.fetchone()
+        result = cursor.fetchone()[0]
         return result
 
     def get_supply_by_supid(self,supid):
@@ -139,7 +139,7 @@ class SupplierDAO:
         select * from supplies where sid = %s;
         """
         cursor.execute(query, (supid,))
-        result = cursor.fetchone()
+        result = cursor.fetchone()[0]
         return result
 
     def get_supplier_supplies_stock_by_supid(self, supid):
@@ -148,7 +148,25 @@ class SupplierDAO:
         select stock from supplies where supid = %s;
         """
         cursor.execute(query, (supid,))
-        result = cursor.fetchone()
+        result = cursor.fetchone()[0]
         return result
+
+    def get_supplier_supplies_stock_by_sid_and_pid(self, sid, pid):
+        cursor = self.conn.cursor()
+        query = """
+        select stock from supplies where sid = %s and pid = %s;
+        """
+        cursor.execute(query, (sid,pid))
+        result = cursor.fetchone()[0]
+        return result
+
+    def edit_supplies_stock_by_sid_and_pid(self, sid, pid, new_stock):
+        cursor = self.conn.cursor()
+        query = """
+        update supplies set stock = %s where sid = %s and pid = %s;
+        """
+        cursor.execute(query, (new_stock, sid, pid))
+        self.conn.commit()
+        return sid, pid
 
 # -------- end of supplies -------------

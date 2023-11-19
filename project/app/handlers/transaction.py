@@ -68,20 +68,20 @@ class TransactionHandler:
         if not supid: return False
         
         # validate supplier stock
-        sup_stock = supplier_dao.get_supplier_supplies_stock_by_supid(supid)[0] # this returns a list
+        sup_stock = supplier_dao.get_supplier_supplies_stock_by_supid(supid)
         #print("Valid Stock: "+sup_stock < tquantity)
         if sup_stock < tquantity: return False
 
         # validate rack capacity
-        rack_capacity = rack_dao.get_rack_capacity(rid)[0]
-        curr_rack_quantity = rack_dao.get_rack_quantity(rid)[0]
+        rack_capacity = rack_dao.get_rack_capacity(rid)
+        curr_rack_quantity = rack_dao.get_rack_quantity(rid)
         free_space = rack_capacity-curr_rack_quantity #verify if this is the correct assumption to make
         #print("Free space: "+free_space < tquantity)
         if free_space < tquantity: return False
         
         # validate warehouse budget
-        ware_budget = warehouse_dao.get_warehouse_budget(wid)[0]
-        total_cost = tquantity*part_dao.get_part_price(pid)[0]
+        ware_budget = warehouse_dao.get_warehouse_budget(wid)
+        total_cost = tquantity*part_dao.get_part_price(pid)
         
         if ware_budget < total_cost: return False
         if total_cost != ttotal: return False
@@ -128,9 +128,9 @@ class TransactionHandler:
                 if self.validate(pid, sid, rid, uid, wid, tquantity, ttotal): #check if valid data is sent  
                     #daos
                     transaction_dao = incoming_dao = TransactionDAO()
-                    # warehouse_dao = WarehouseDAO()
-                    # rack_dao = RackDAO()
-                    # supplier_dao = SupplierDAO()
+                    warehouse_dao = WarehouseDAO()
+                    rack_dao = RackDAO()
+                    supplier_dao = SupplierDAO()
                     #create entry in master transactions
                     tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid, uid)
                     #create entry in incoming transactions
@@ -142,21 +142,20 @@ class TransactionHandler:
                     
                     # #-----Updates-----
                     # #update warehouse:
-                    # warehouse_budget = warehouse_dao.get_warehouse_budget(wid)
-                    # new_budget = warehouse_budget - ttotal
-                    # print("Curr_budget: "+ warehouse_budget)
-                    # print("New_budget: "+ new_budget)
-                    # wid = warehouse_dao.edit_warehouse_budget(wid, new_budget)
+                    warehouse_budget = warehouse_dao.get_warehouse_budget(wid)
+                    new_budget = warehouse_budget - ttotal
+
+                    wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
                     # #update rack:
                     
-                    # new_quantity = rack_dao.get_rack_quantity(rid) + tquantity
+                    new_quantity = rack_dao.get_rack_quantity(rid) + tquantity
                     # print("New_quantity: "+new_quantity)
-                    # #rid = rack_dao.edit_rack_quantity(rid, new_quantity)
+                    rid = rack_dao.set_rack_quantity(rid, new_quantity)
                     # #update supplies:
                     
-                    # new_stock = supplier_dao.get_supplies_stock(sid, pid) - tquantity
+                    new_stock = supplier_dao.get_supplier_supplies_stock_by_sid_and_pid(sid, pid) - tquantity
                     # print("New_stock: "+new_stock)
-                    # sid,pid = supplier_dao.edit_supplies_stock(sid, pid, new_stock)
+                    sid,pid = supplier_dao.edit_supplies_stock_by_sid_and_pid(sid, pid, new_stock)
                     # #-----End Updates-----
 
                     #show results

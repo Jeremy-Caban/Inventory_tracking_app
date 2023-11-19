@@ -150,7 +150,7 @@ class RackDAO:
             select capacity from rack as r where r.rid = %s;
         '''
         cursor.execute(query, (rid,))
-        capacity = cursor.fetchone()
+        capacity = cursor.fetchone()[0]
         return capacity
 
     def get_rack_quantity(self, rid):
@@ -159,5 +159,14 @@ class RackDAO:
             select quantity from rack as r where r.rid = %s;
         '''
         cursor.execute(query, (rid,))
-        quantity = cursor.fetchone()
+        quantity = cursor.fetchone()[0]
         return quantity
+
+    def set_rack_quantity(self, rid, new_quantity):
+        cursor = self.conn.cursor()
+        query = '''
+            update rack set quantity = %s where rid = %s;
+         '''
+        cursor.execute(query, (new_quantity, rid))
+        self.conn.commit()
+        return rid
