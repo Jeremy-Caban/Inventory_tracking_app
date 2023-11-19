@@ -33,6 +33,7 @@ class WarehouseHandler:
         if not row:
             return jsonify(Error = "Warehouse not found"), 404
         else:
+            row = row[0]
             warehouse = self.build_warehouse_dict(row)
             return jsonify(Warehouse = warehouse)
 

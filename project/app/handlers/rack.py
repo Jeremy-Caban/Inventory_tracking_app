@@ -9,7 +9,7 @@ from app.dao.user import UserDAO
 # TODO(xavier)
 class RackHandler:
     def build_rack_dict(self, rows):
-        keys = ['rid', 'capacity', 'quantity', 'pid', 'wid']
+        keys = ['rid', 'capacity', 'wid', 'quantity', 'pid']
         return dict(zip(keys, rows))
 
     def build_rack_attributes(self, rid, capacity, quantity, pid, wid):
@@ -37,6 +37,7 @@ class RackHandler:
         if not row:
             return jsonify(Error="Rack not found"), 404
         else:
+            row = row[0]
             rack = self.build_rack_dict(row)
             return jsonify(Rack=rack)
 
