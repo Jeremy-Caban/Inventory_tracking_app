@@ -9,7 +9,7 @@ from flask import jsonify, request
 
 # TODO(xavier) Finish implementing all warehouse routes and other functionality.
 
-@app.route('/warehouse', methods=['GET', 'POST'])
+@app.route('/los-cangri/warehouse', methods=['GET', 'POST'])
 def getAllWarehouses():
     if request.method == 'POST':
         print(request.json)
@@ -17,7 +17,7 @@ def getAllWarehouses():
     return WarehouseHandler().get_all_warehouses()
 
 
-@app.route('/warehouse/<int:wid>',
+@app.route('/los-cangri/warehouse/<int:wid>',
            methods=['GET', 'PUT', 'DELETE'])
 def get_warehouse_by_id(wid):
     if request.method == 'GET':
@@ -30,7 +30,7 @@ def get_warehouse_by_id(wid):
         return jsonify(Error="Not implemented"), 501
 
 
-@app.route('/warehouse/<string:wname>')
+@app.route('/los-cangri/warehouse/<string:wname>')
 def get_warehouse_by_name(wname):
     if request.method == 'GET':
         return WarehouseHandler().get_warehouse_by_name(str(wname))
@@ -38,7 +38,7 @@ def get_warehouse_by_name(wname):
         return jsonify(Error="Not implemented"), 501
 
 
-@app.route('/warehouse/<int:wid>/rack/lowstock', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/rack/lowstock', methods=['POST'])
 def get_warehouse_rack_lowstock(wid):
     if request.method == "POST":
         print(request.json)
@@ -49,7 +49,7 @@ def get_warehouse_rack_lowstock(wid):
         return jsonify(Error="Not implemented"), 501
 
 
-@app.route('/warehouse/<int:wid>/rack/expensive', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/rack/expensive', methods=['POST'])
 def get_most_expensive_racks(wid):
     if request.method == "POST":
         print(request.json)
@@ -60,7 +60,7 @@ def get_most_expensive_racks(wid):
         return jsonify(Error="Not implemented"), 501
 
 
-@app.route('/warehouse/<int:wid>/rack/material', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/rack/material', methods=['POST'])
 def get_warehouse_rack_bottom_material(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id', None) is None:
@@ -69,7 +69,7 @@ def get_warehouse_rack_bottom_material(wid):
     else:
         return jsonify(Error="Not implemented"), 501
 
-@app.route('/warehouse/<int:wid>/transaction/suppliers', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/transaction/suppliers', methods=['POST'])
 def get_warehouse_top_suppliers(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id',None) is None:
@@ -78,7 +78,7 @@ def get_warehouse_top_suppliers(wid):
     else:
         return jsonify(Error="Not implemented"), 501
 
-@app.route('/warehouse/<int:wid>/transaction/leastcost', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/transaction/leastcost', methods=['POST'])
 def get_warehouse_least_cost(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id', None) is None:
@@ -87,7 +87,7 @@ def get_warehouse_least_cost(wid):
     else:
         return jsonify(Error="Not implemented"), 501
 
-@app.route('/warehouse/<int:wid>/users/receivemost', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/users/receivemost', methods=['POST'])
 def get_user_receives_most(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id', None) is None:
@@ -96,7 +96,7 @@ def get_user_receives_most(wid):
     else:
         return jsonify(Error="Not implemented"), 501
 
-@app.route('/warehouse/<int:wid>/profit', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/profit', methods=['POST'])
 def get_warehouse_profit(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id', None) is None:

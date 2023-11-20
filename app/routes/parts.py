@@ -3,7 +3,7 @@ from app.handlers.parts import PartHandler
 from flask import Flask, jsonify, request
 
 
-@app.route('/parts', methods=['GET', 'POST'])
+@app.route('/los-cangri/part', methods=['GET', 'POST'])
 def getAllParts():
     if request.method == 'POST':
         print("REQUEST: ", request.json)
@@ -15,7 +15,7 @@ def getAllParts():
             return PartHandler().searchParts(request.args)
 
 
-@app.route('/parts/<int:pid>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/los-cangri/part/<int:pid>', methods=['GET', 'PUT', 'DELETE'])
 def getPartById(pid):
     if request.method == 'GET':
         return PartHandler().getPartById(pid)

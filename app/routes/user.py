@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 
 
 # Leamsi working here
-@app.route('/user', methods=['GET', 'POST'])
+@app.route('/los-cangri/user', methods=['GET', 'POST'])
 def getAllUsers():
     if request.method == 'POST':
         print("REQUEST: ", request.json)
@@ -16,7 +16,7 @@ def getAllUsers():
             return UserHandler().searchUsers(request.args)
 
 
-@app.route('/user/<int:uid>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/los-cangri/user/<int:uid>', methods=['GET', 'PUT', 'DELETE'])
 def getUserById(uid):
     if request.method == 'GET':
         return UserHandler().getUserById(uid)

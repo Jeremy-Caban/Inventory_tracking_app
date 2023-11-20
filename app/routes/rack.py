@@ -3,7 +3,7 @@ from app.handlers.rack import RackHandler
 from flask import jsonify, request
 
 
-@app.route('/rack', methods=['GET', 'POST'])
+@app.route('/los-cangri/rack', methods=['GET', 'POST'])
 def getAllRacks():
     if request.method == 'POST':
         print(request.json)
@@ -11,7 +11,7 @@ def getAllRacks():
     return RackHandler().get_all_racks()
 
 
-@app.route('/rack/<int:rid>',
+@app.route('/los-cangri/rack/<int:rid>',
            methods=['GET', 'PUT', 'DELETE'])
 def get_rack_by_id(rid):
     if request.method == 'GET':

@@ -11,14 +11,14 @@ from flask import Flask, jsonify, request
 # update supplier data
 # delete supplier by id
 
-@app.route('/supplier', methods=['GET', 'POST'])
+@app.route('/los-cangri/supplier', methods=['GET', 'POST'])
 def getAllSuppliers():
     if request.method == "POST":
         print("REQUEST: ",request.json)
         return SupplierHandler().insert_supplier(request.json)
     return SupplierHandler().get_all_suppliers()
 
-@app.route('/supplier/<int:sid>',
+@app.route('/los-cangri/supplier/<int:sid>',
            methods=['GET','PUT','DELETE'])
 def get_supplier_by_id(sid):
     if request.method == 'GET':
@@ -31,7 +31,7 @@ def get_supplier_by_id(sid):
         return jsonify(Error = "Not implemented"), 501
 
 
-@app.route('/supplier/<int:sid>/parts', methods=['GET','PUT','POST'])
+@app.route('/los-cangri/supplier/<int:sid>/parts', methods=['GET','PUT','POST'])
 def associate_supplier_with_part(sid):
     if request.method == 'GET':
         return SupplierHandler().get_supplied_parts(sid)
