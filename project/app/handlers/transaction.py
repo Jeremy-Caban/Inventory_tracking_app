@@ -370,7 +370,7 @@ class TransactionHandler:
         all_exchange = dao.get_all_exchange()
         result = []
         for row in all_exchange:
-            result.append(self.build_attributes_dict(row), "exchange")
+            result.append(self.build_attributes_dict(row, "exchange"))
         return jsonify(exchange=result)
     
     def get_exchange_by_id(self, tranid):
