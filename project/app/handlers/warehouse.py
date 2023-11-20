@@ -70,6 +70,11 @@ class WarehouseHandler:
         result = [self.build_most_dict(row) for row in warehouse_list]
         return jsonify(Warehouses=result)
 
+    def get_most_city_transactions(self, amount=3):
+        dao = WarehouseDAO()
+        city_list = dao.get_most_city_transactions(amount)
+        result = [dict(zip(['city','count'], row)) for row in city_list]
+        return jsonify(Citites=result)
 
     def insert_warehouse(self, json):
         wname = json.get('wname', None)

@@ -105,7 +105,22 @@ class WarehouseDAO:
         from warehouse natural inner join outgoingt
         group by wid
         order by count(outid)
-        limit %s
+        limit %s;
+        '''
+        cursor.execute(query, (amount,))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+
+    def get_most_city_transactions(self, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select wcity, count(tid)
+        from warehouse natural inner join rack
+        natural inner join transaction
+        group by wcity
+        order by count(tid) desc
+        limit %s;
         '''
         cursor.execute(query, (amount,))
         result = [row for row in cursor]
