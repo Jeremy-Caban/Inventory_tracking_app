@@ -155,6 +155,20 @@ class WarehouseDAO:
         profit = cursor.fetchone()[0]
         cursor.close()
         return profit
+
+    def get_warehouse_most_deliver(self, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select outgoing_wid, count(outgoing_wid) as count
+        from transfert
+        group by outgoing_wid
+        order by count desc
+        limit %s;
+        '''
+        cursor.execute(query, (amount, ))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
     
     def set_warehouse_budget(self, wid, new_budget):
         cursor = self.conn.cursor()

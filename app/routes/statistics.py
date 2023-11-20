@@ -26,3 +26,9 @@ def get_most_city_transactions():
      if request.method != "GET":
          return jsonify(Error = 'Not allowed'), 404
      return WarehouseHandler().get_most_city_transactions()
+
+@app.route('/most/deliver')
+def get_warehouse_most_deliver():
+    if request.method != "GET":
+        return jsonify(Error = 'Not allowed'), 404
+    return WarehouseHandler().get_warehouse_most_deliver()
