@@ -79,7 +79,7 @@ class TransactionDAO:
                             values (%s, %s, %s) returning outid;
                             ''',
         "update_outgoing":'''
-                            update outgoingt set <write new vals here> where outid = %s;
+                            update outgoingt set obuyer = %s, wid = %s, tid = %s;
                             ''',
         "delete_outgoing":'''
                             delete from outgoingt where outid = %s;
@@ -124,10 +124,10 @@ class TransactionDAO:
     def update_transaction(self, tquantity, ttotal, pid, sid, rid, uid, tid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["update_transaction"], (tquantity, ttotal, pid, sid, rid, uid, tid))
-        tid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return tid
+    
     #needed for jsonify
     def get_transaction_date(self, tid):
         cursor = self.conn.cursor()
@@ -170,9 +170,10 @@ class TransactionDAO:
         cursor.close()
         return incid
     
-    def update_incoming(self, incid, wid, tid):
+    def update_incoming(self, wid, incid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["update_incoming"], (wid, tid, incid))
+        query = "update incomingt set wid= %s where incid = %s;"
+        cursor.execute(query, (wid, incid))
         self.conn.commit()
         cursor.close()
         return incid

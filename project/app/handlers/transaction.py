@@ -7,7 +7,7 @@ from app.dao.parts import PartsDAO
 from app.dao.supplier import SupplierDAO
 class TransactionHandler:
     #KEYS
-    incoming_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
+    incoming_keys = ['tid', 'icid','tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
     outgoing_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid','obuyer','wid']
     exchange_keys = []
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
@@ -194,7 +194,7 @@ class TransactionHandler:
                     print(incid) #random print
                     #prep results
                     tdate = incoming_dao.get_transaction_date(tid)
-                    attr_array = [tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
+                    attr_array = [tid, incid, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
                     
                     # #-----Updates-----
                     # #update warehouse:
@@ -215,7 +215,7 @@ class TransactionHandler:
                     # #-----End Updates-----
 
                     #show results
-                    result = self.build_attributes_dict(attr_array, self.incoming_keys)
+                    result = self.build_attributes_dict(attr_array, "incoming")
                     return jsonify(Incoming=result)
                 else:
                     return jsonify(Error="Invalid Data")
@@ -223,8 +223,27 @@ class TransactionHandler:
     
 
     #UPDATE-----
-    def update_incoming(self, tid, json):
-        return
+    def update_incoming(self, incid, json):
+        if len(json)!=7: return jsonify(Error="Unexpected/Missing attributes in request.")
+        dao = TransactionDAO()
+        tquantity = json.get('tquantity', None)
+        ttotal = json.get('ttotal', None)
+        pid = json.get('pid', None)
+        sid = json.get('sid', None)
+        rid = json.get('rid', None)
+        uid = json.get('uid', None)
+        wid = json.get('wid', None)
+        if incid and tquantity and ttotal and pid and sid and rid and uid and wid and dao.get_incoming_by_id(incid):
+            tid = dao.get_tid_from_incoming(incid)
+            dao.update_transaction(tquantity, ttotal, pid, sid, rid, uid, tid)
+            dao.update_incoming(wid, tid)
+            print(incid)
+            tdate = dao.get_transaction_date(tid)
+            attr_array = [tid, incid, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
+            result = self.build_attributes_dict(attr_array, "incoming")
+            return jsonify(Incoming=result)
+        else:
+            return jsonify(Error="Unexpected/Missing attributes in request.")
     
 
     #DELETE (ONLY FOR DEBUGGING)
