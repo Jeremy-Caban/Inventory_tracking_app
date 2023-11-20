@@ -120,3 +120,18 @@ class UserHandler:
                     return jsonify(User=result), 200
                 else:
                     return jsonify(Error="Unexpected attributes in update request"), 400
+
+    def getUserReceivesMost(self, wid, json, amount=3):
+        dao = UserDAO()
+        if not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error='Warehouse not found'), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error = 'User not found'), 404
+        if user_warehouse_tuple[0] != wid:
+            return jsonify(Error = 'User has no access to warehouse'), 403
+        user_list = dao.getUserReceivesMost(wid, amount)
+        result = [dict(zip(['uid','count'],row)) for row in user_list]
+        return result
+

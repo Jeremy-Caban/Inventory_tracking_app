@@ -102,6 +102,21 @@ class UserDAO:
         cursor.close()
         return wid
 
+    def getUserReceivesMost(self, wid, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select uid, count(tid)
+        from public.user u natural inner join transaction
+        where u.wid = %s
+        group by uid
+        order by count(tid) desc
+        limit %s
+        '''
+        cursor.execute(query, (wid, amount))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+
     def insert(self, fname, lname, wid, uemail=None, uphone=None):
         cursor = self.conn.cursor()
         query = '''
