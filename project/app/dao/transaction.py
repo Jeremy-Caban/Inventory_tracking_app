@@ -72,7 +72,7 @@ class TransactionDAO:
                             select * from outgoingt;
                             ''',
         "get_outgoing_by_id":'''
-                            select * from outgoingt where outid = %s;
+                            select * from outgoingt natural inner join where outid = %s;
                             ''',
         "insert_outgoing":'''
                             insert into outgoingt(obuyer, wid, tid)
@@ -203,11 +203,20 @@ class TransactionDAO:
     
     def get_outgoing_by_id(self, outid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_outgoing_by_id"], (outid,))
+        query = "select * from outgoingt natural inner join transaction where outid = %s;"
+        cursor.execute(query, (outid,))
         result = [row for row in cursor]
         cursor.close()
         return result
     
+    def get_tid_from_outgoing(self, outid):
+        cursor = self.conn.cursor()
+        query = "select tid from outgoingt where outid = %s;"
+        cursor.execute(query, (outid,))
+        tid = cursor.fetchone()[0]
+        cursor.close()
+        return tid
+
     def insert_outgoing(self, obuyer, wid, tid):
         cursor = self.conn.cursor()
         cursor.execute(self.query_dict["insert_outgoing"], (obuyer,wid, tid))
@@ -217,12 +226,13 @@ class TransactionDAO:
         return outid
     
     #TODO(xavier)
-    def update_outgoing(self, tid):
+    def update_outgoing(self, outid, obuyer, wid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["update_outgoing"], (wid, tid, incid))
+        query = "update outgoingt set obuyer = %s, wid= %s where outid = %s;"
+        cursor.execute(query, (obuyer, wid, outid))
         self.conn.commit()
         cursor.close()
-        return
+        return outid
 
     #for debugging, will be unused
     def delete_outgoing(self, tid):

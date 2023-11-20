@@ -8,7 +8,7 @@ from app.dao.supplier import SupplierDAO
 class TransactionHandler:
     #KEYS
     incoming_keys = ['tid', 'icid','tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
-    outgoing_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid','obuyer','wid']
+    outgoing_keys = ['tid', 'outid','obuyer', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
     exchange_keys = []
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     #DAOS
@@ -237,7 +237,6 @@ class TransactionHandler:
             tid = dao.get_tid_from_incoming(incid)
             dao.update_transaction(tquantity, ttotal, pid, sid, rid, uid, tid)
             dao.update_incoming(wid, tid)
-            print(incid)
             tdate = dao.get_transaction_date(tid)
             attr_array = [tid, incid, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
             result = self.build_attributes_dict(attr_array, "incoming")
@@ -337,8 +336,27 @@ class TransactionHandler:
 
 
     #UPDATE-----
-    def update_outgoing(self, tid, json):
-        return
+    def update_outgoing(self, outid, json):
+        if len(json)!=8: return jsonify(Error="Unexpected/Missing attributes in request.")
+        dao = TransactionDAO()
+        tquantity = json.get('tquantity', None)
+        ttotal = json.get('ttotal', None)
+        pid = json.get('pid', None)
+        sid = json.get('sid', None)
+        rid = json.get('rid', None)
+        uid = json.get('uid', None)
+        wid = json.get('wid', None)
+        obuyer = json.get('obuyer', None)
+        if outid and tquantity and ttotal and pid and sid and rid and uid and wid and obuyer and dao.get_outgoing_by_id(outid):
+            tid = dao.get_tid_from_outgoing(outid)
+            dao.update_transaction(tquantity, ttotal, pid, sid, rid, uid, tid)
+            dao.update_outgoing(outid, obuyer, wid)
+            tdate = dao.get_transaction_date(tid)
+            attr_array = [tid, outid, obuyer, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
+            result = self.build_attributes_dict(attr_array, "outgoing")
+            return jsonify(Incoming=result)
+        else:
+            return jsonify(Error="Unexpected/Missing attributes in request.")
 
     #DELETE (ONLY FOR DEBUGGING)
     def delete_outgoing(self):
