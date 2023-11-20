@@ -8,7 +8,7 @@ from app.dao.supplier import SupplierDAO
 class TransactionHandler:
     #KEYS
     incoming_keys = ['tid', 'icid','tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
-    outgoing_keys = ['tid', 'outid','obuyer', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid','wid']
+    outgoing_keys = ['tid', 'outid','obuyer', 'wid', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     exchange_keys = []
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     #DAOS
@@ -139,7 +139,7 @@ class TransactionHandler:
         all_incoming = dao.get_all_incoming()
         result = []
         for row in all_incoming:
-            result.append(self.build_attributes_dict(row))
+            result.append(self.build_attributes_dict(row,""))
         return jsonify(incoming=result)
     
     def get_incoming_by_id(self, incid):
@@ -148,7 +148,7 @@ class TransactionHandler:
         if not row:
             return jsonify(Error = "Incoming transaction not found"), 404
         else:
-            incoming = self.build_attributes_dict(row[0]) #note: dao.get_incoming_by_id returns a list of rows
+            incoming = self.build_attributes_dict(row[0], "incoming") #note: dao.get_incoming_by_id returns a list of rows
             return jsonify(Incoming = incoming)
     
 
@@ -267,7 +267,7 @@ class TransactionHandler:
         all_outgoing = dao.get_all_outgoing()
         result = []
         for row in all_outgoing:
-            result.append(self.build_attributes_dict(row))
+            result.append(self.build_attributes_dict(row, "outgoing"))
         return jsonify(Outgoing=result)
 
     def get_outgoing_by_id(self, outid):
@@ -276,7 +276,7 @@ class TransactionHandler:
         if not row:
             return jsonify(Error = "Outgoing transaction not found"), 404
         else:
-            outgoing = self.build_attributes_dict(row[0])
+            outgoing = self.build_attributes_dict(row[0],"outgoing")
             return jsonify(Outgoing = outgoing)
 
     #CREATE-----
@@ -320,7 +320,7 @@ class TransactionHandler:
         tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid, uid)
         outid = outgoing_dao.insert_outgoing(obuyer, wid, tid)
         tdate = transaction_dao.get_transaction_date(tid)
-        attr_array = [tdate, tquantity, ttotal, pid, sid, rid, uid, wid, obuyer]
+        attr_array = [tid,outid, obuyer, wid, tdate, tquantity, ttotal, pid, sid, rid, uid]
 
         #update tables
         warehouse_dao = WarehouseDAO()
@@ -330,7 +330,7 @@ class TransactionHandler:
         new_quantity = curr_quantity - tquantity
         rid = rack_dao.set_rack_quantity(rid, new_quantity)
 
-        result = self.build_attributes_dict(attr_array, self.incoming_keys)
+        result = self.build_attributes_dict(attr_array, "outgoing")
         return jsonify(Outgoing=result)
 
 
@@ -352,7 +352,7 @@ class TransactionHandler:
             dao.update_transaction(tquantity, ttotal, pid, sid, rid, uid, tid)
             dao.update_outgoing(outid, obuyer, wid)
             tdate = dao.get_transaction_date(tid)
-            attr_array = [tid, outid, obuyer, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
+            attr_array = [tid,outid, obuyer, wid, tdate, tquantity, ttotal, pid, sid, rid, uid]
             result = self.build_attributes_dict(attr_array, "outgoing")
             return jsonify(Incoming=result)
         else:
@@ -384,6 +384,7 @@ class TransactionHandler:
 
     #CREATE-----
     def insert_exchange(self, json):
+        if len(json)!=8: return
         return
     
 

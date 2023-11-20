@@ -196,7 +196,8 @@ class TransactionDAO:
     #----------------------dao for outgoing----------------------
     def get_all_outgoing(self):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_all_outgoing"])
+        query = "select * from outgoingt natural inner join transaction;"
+        cursor.execute(query)
         result = [row for row in cursor]
         cursor.close()
         return result
