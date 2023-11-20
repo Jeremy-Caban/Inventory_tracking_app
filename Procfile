@@ -1,1 +1,1 @@
-web: python3 project/main.py
+web: python3 main.py
