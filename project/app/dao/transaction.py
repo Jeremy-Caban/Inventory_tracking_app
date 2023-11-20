@@ -241,14 +241,16 @@ class TransactionDAO:
     #----------------------dao for exchange----------------------
     def get_all_exchange(self):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_all_exchange"])
+        query = "select * from incomingt natural inner join transaction;"
+        cursor.execute(query)
         result = [row for row in cursor]
         cursor.close()
         return result
     
     def get_exchange_by_id(self, tranid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_incoming_by_id"], (tranid,))
+        query = "select * from incomingt natural inner join transaction where tranid = %s;"
+        cursor.execute(query, (tranid,))
         result = [row for row in cursor]
         cursor.close()
         return result
