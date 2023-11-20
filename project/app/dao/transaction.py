@@ -242,7 +242,7 @@ class TransactionDAO:
     #----------------------dao for exchange----------------------
     def get_all_exchange(self):
         cursor = self.conn.cursor()
-        query = "select * from incomingt natural inner join transaction;"
+        query = "select * from transfert natural inner join transaction;"
         cursor.execute(query)
         result = [row for row in cursor]
         cursor.close()
@@ -250,14 +250,30 @@ class TransactionDAO:
     
     def get_exchange_by_id(self, tranid):
         cursor = self.conn.cursor()
-        query = "select * from incomingt natural inner join transaction where tranid = %s;"
+        query = "select * from transfert natural inner join transaction where tranid = %s;"
         cursor.execute(query, (tranid,))
         result = [row for row in cursor]
         cursor.close()
         return result
-    
-    def insert_exchange(self):
-        return
+
+    def get_tid_from_exchange(self, tranid):
+        cursor = self.conn.cursor()
+        query = "select tid from transfert where tranid = %s;"
+        cursor.execute(query, (tranid,))
+        tid = cursor.fetchone()[0]
+        cursor.close()
+        return tid
+
+    def insert_exchange(self, outgoing_wid, incoming_wid, tid):
+        cursor = self.conn.cursor()
+        query = ''' insert into transfert(outgoing_wid, incoming_wid, tid)
+                            values (%s, %s, %s) returning tranid;
+'''
+        cursor.execute(query, (outgoing_wid,incoming_wid, tid))
+        tranid = cursor.fetchone()[0]
+        self.conn.commit()
+        cursor.close()
+        return tranid
     
     def update_exchange(self, tranid):
         return
