@@ -1,5 +1,6 @@
 from flask import jsonify
 from app.dao.warehouse import WarehouseDAO
+from app.dao.user import UserDAO
 
 #TODO(xavier)
 class WarehouseHandler:
@@ -75,6 +76,19 @@ class WarehouseHandler:
         city_list = dao.get_most_city_transactions(amount)
         result = [dict(zip(['city','count'], row)) for row in city_list]
         return jsonify(Citites=result)
+
+    def get_warehouse_profit(self, wid, json):
+        dao = WarehouseDAO()
+        if not dao.get_warehouse_by_id(wid):
+            return jsonify(Error='Warehouse not found'), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error='User not found'), 404
+        if user_warehouse_tuple[0] != wid:
+            return jsonify(Error='User has no access to warehouse.'), 403
+        result = dao.get_warehouse_profit(wid)
+        return jsonify(Profit={'profit':result})
 
     def insert_warehouse(self, json):
         wname = json.get('wname', None)

@@ -137,6 +137,24 @@ class WarehouseDAO:
         budget = cursor.fetchone()[0]
         cursor.close()
         return budget
+
+    def get_warehouse_profit(self, wid):
+        cursor = self.conn.cursor()
+        query = '''
+        select
+            earnings.income - expenses.cost as profit
+        from
+            (select
+                sum(ttotal) as cost
+            from transaction natural inner join incomingt where wid = %s ) as expenses,
+            (select
+                sum(ttotal) as income
+            from transaction natural inner join outgoingt where wid = %s ) as earnings;
+        '''
+        cursor.execute(query, (wid,wid))
+        profit = cursor.fetchone()[0]
+        cursor.close()
+        return profit
     
     def set_warehouse_budget(self, wid, new_budget):
         cursor = self.conn.cursor()

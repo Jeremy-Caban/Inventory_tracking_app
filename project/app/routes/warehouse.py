@@ -95,3 +95,12 @@ def get_user_receives_most(wid):
         return UserHandler().getUserReceivesMost(wid, request.json)
     else:
         return jsonify(Error="Not implemented"), 501
+
+@app.route('/warehouse/<int:wid>/profit', methods=['POST'])
+def get_warehouse_profit(wid):
+    if request.method == "POST":
+        if not request.json or request.json.get('User_id', None) is None:
+            return jsonify(Error="User ID is not provided."), 403
+        return WarehouseHandler().get_warehouse_profit(wid, request.json)
+    else:
+        return jsonify(Error="Not implemented"), 501
