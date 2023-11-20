@@ -85,8 +85,8 @@ def get_warehouse_least_cost(wid):
     else:
         return jsonify(Error="Not implemented"), 501
 
-@app.route('/warehouse/<int:wid>/users/receivesmost', methods=['POST'])
-@app.route('/warehouse/<int:wid>/users/receivemost', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/users/receivesmost', methods=['POST'])
+@app.route('/los-cangri/warehouse/<int:wid>/users/receivemost', methods=['POST'])
 def get_user_receives_most(wid):
     if request.method == "POST":
         if not request.json or request.json.get('User_id', None) is None:
