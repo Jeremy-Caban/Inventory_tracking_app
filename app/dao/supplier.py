@@ -124,7 +124,7 @@ class SupplierDAO:
     def get_supplied_parts_by_sid(self, sid):
         cursor = self.conn.cursor()
         query = """
-        select pid, pprice, ptype from supplies natural inner join parts where sid = %s;
+        select pid, pprice, ptype, pname from supplies natural inner join parts where sid = %s;
         """
         cursor.execute(query, (sid,))
         result = []
