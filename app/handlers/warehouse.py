@@ -1,7 +1,7 @@
 from flask import jsonify
 from app.dao.warehouse import WarehouseDAO
 from app.dao.user import UserDAO
-
+from app.dao.rack import RackDAO
 #TODO(xavier)
 class WarehouseHandler:
     def build_warehouse_dict(self, rows):
@@ -143,6 +143,25 @@ class WarehouseHandler:
         response = dao.delete(wid)
         return jsonify(DeletedStatus='OK',row=response), 200
 
+    def get_warehouse_parts(self, wid, json):
+        
+        ware_dao = WarehouseDAO()
+        warehouse = ware_dao.get_warehouse_by_id(wid)
+        
+        if not warehouse:
+            return jsonify(Error="Warehouse not found"), 404
+        uid = json.get('User_id', None)
+        user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
+        if not user_warehouse_tuple:
+            return jsonify(Error='User not found'), 404
+        if user_warehouse_tuple[0] != wid:
+            return jsonify(Error='User has no access to warehouse.'), 403
+
+        rack_dao = RackDAO()
+        parts = rack_dao.get_parts_in_warehouse(wid)
+        keys = ['ptype', 'pname', 'pid']
+        result = [dict(zip(keys,row)) for row in parts]
+        return jsonify(Parts_in_warehouse=result), 201
 
 
 

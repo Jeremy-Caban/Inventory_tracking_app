@@ -103,3 +103,13 @@ def get_warehouse_profit(wid):
         return WarehouseHandler().get_warehouse_profit(wid, request.json)
     else:
         return jsonify(Error="Not implemented"), 501
+
+
+@app.route('/los-cangri/warehouse/parts/<int:wid>', methods=['POST'])
+def get_warehouse_parts(wid):
+    if request.method == 'POST':
+        if not request.json or request.json.get('User_id', None) is None:
+            return jsonify(Error="User ID is not provided."), 403
+        return WarehouseHandler().get_warehouse_parts(wid, request.json)
+    else:
+        return jsonify(Error="Not implemented"), 501

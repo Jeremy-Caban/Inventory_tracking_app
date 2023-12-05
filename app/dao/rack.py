@@ -184,3 +184,16 @@ class RackDAO:
         self.conn.commit()
         cursor.close()
         return rid
+
+    def get_parts_in_warehouse(self, wid):
+        cursor = self.conn.cursor()
+        query = '''
+                select ptype, pname, pid
+                from parts natural inner join rack natural inner join warehouse
+                where wid = %s;
+                '''
+        cursor.execute(query, (wid,))
+        self.conn.commit()
+        result = [row for row in cursor]
+        cursor.close()
+        return result
