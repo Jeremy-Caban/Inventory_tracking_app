@@ -134,4 +134,11 @@ class UserHandler:
         user_list = dao.getUserReceivesMost(wid, amount)
         result = [dict(zip(['uid','count'],row)) for row in user_list]
         return result
+    
+    def getUsersWithMostTransactions(self, amount = 3):
+        dao = UserDAO()
+        user_list = dao.getUsersWithMostTransactions(amount)
+        result = [dict(zip(['uid','count'],row)) for row in user_list]
+        return jsonify(Users = result)
+
 

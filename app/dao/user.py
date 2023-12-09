@@ -117,6 +117,19 @@ class UserDAO:
         cursor.close()
         return result
 
+    def getUsersWithMostTransactions(self, amount):
+        cursor = self.conn.cursor()
+        query = '''
+        select uid, count(transaction) from "user" natural inner join transaction
+        group by uid
+        order by count(transaction) desc
+        limit %s;
+        '''
+        cursor.execute(query, (amount,))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+    
     def insert(self, fname, lname, wid, uemail=None, uphone=None):
         cursor = self.conn.cursor()
         query = '''

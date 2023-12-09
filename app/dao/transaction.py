@@ -144,7 +144,8 @@ class TransactionDAO:
     #----------------------dao for incoming----------------------
     def get_all_incoming(self):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_all_incoming"])
+        query = "select * from incomingt natural inner join transaction;"
+        cursor.execute(query)
         result = [row for row in cursor]
         cursor.close()
         return result
