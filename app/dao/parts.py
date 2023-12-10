@@ -1,5 +1,6 @@
 from app.config import dbconfig
 import psycopg2
+from psycopg2 import errors
 
 class PartsDAO:
     def __init__(self):
@@ -73,11 +74,15 @@ class PartsDAO:
         return pid
 
     def delete(self, pid):
-        cursor = self.conn.cursor()
-        query = "delete from parts where pid = %s;"
-        cursor.execute(query, (pid,))
-        self.conn.commit()
-        return pid
+        try:
+            cursor = self.conn.cursor()
+            query = "delete from parts where pid = %s;"
+            cursor.execute(query, (pid,))
+            self.conn.commit()
+            return pid
+        except errors.ForeignKeyViolation as error:
+            self.conn.rollback()
+            return -1
 
     def update(self, pid, pprice, ptype, pname):
         cursor = self.conn.cursor()

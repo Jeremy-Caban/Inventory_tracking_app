@@ -1,5 +1,6 @@
 from app.config import dbconfig
 import psycopg2
+from psycopg2 import errors
 
 #Jeremy at work here :)
 
@@ -76,12 +77,16 @@ class SupplierDAO:
     
     #Delete
     def delete(self, sid):
-        cursor = self.conn.cursor()
-        query = "delete from supplier where sid = %s;"
-        cursor.execute(query, (sid,))
-        self.conn.commit()
-        cursor.close()
-        return sid
+        try:
+            cursor = self.conn.cursor()
+            query = "delete from supplier where sid = %s;"
+            cursor.execute(query, (sid,))
+            self.conn.commit()
+            cursor.close()
+            return sid
+        except errors.ForeignKeyViolation as error:
+            self.conn.rollback()
+            return -1
 
     #-----CRUD operations end here-----
 
@@ -91,6 +96,8 @@ class SupplierDAO:
 
     #--------Supplies-----------------------------
     def supplyPart(self, stock, sid, pid):
+        if stock <= 0:
+            return "Error. Supplies must be greater than 0.", 400
         cursor = self.conn.cursor()
         query =  'insert into supplies(stock, sid, pid) values (%s, %s, %s) returning supid'
         cursor.execute(query, (stock, sid, pid))
@@ -101,6 +108,8 @@ class SupplierDAO:
     
     def update_supply_stock_by_supid(self, supid, stock):
         cursor = self.conn.cursor()
+        if stock < 0:
+            return "Error. Stock must be greater or equal to 0.", 400
         query = '''
                     update supplies set stock = %s
                     where supid = %s;

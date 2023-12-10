@@ -68,6 +68,10 @@ class PartHandler:
             pprice = form["pprice"]
             ptype = form["ptype"]
             pname = form["pname"]
+            if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
+                return jsonify("Error. Incorrect attribute type."), 400
+            elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
+                return jsonify("Error. Incorrect attribute range."), 400
             if pprice and ptype and pname:
                 dao = PartsDAO()
                 pid = dao.insert(pprice, ptype, pname)
@@ -83,7 +87,11 @@ class PartHandler:
         pprice = json['pprice']
         ptype = json['ptype']
         pname = json['pname']
-        if pprice and ptype and pname:
+        if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
+            return jsonify("Error. Incorrect attribute type."), 400
+        elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
+            return jsonify("Error. Incorrect attribute range."), 400
+        if (pprice >= 0) and ptype and pname:
             dao = PartsDAO()
             pid = dao.insert(pprice, ptype, pname)
             result = self.build_part_attributes(pid, pprice, ptype, pname)
@@ -93,11 +101,13 @@ class PartHandler:
         
     def deletePart(self, pid):
         dao = PartsDAO()
-        if not dao.getPartById(pid):
-            return jsonify(Error="Part not found."), 404
-        else:
-            dao.delete(pid)
+        result = dao.delete(pid)
+        if result == -1:
+            return jsonify("Error. Part {pid} cannot be deleted because it is still referenced in a rack."), 400
+        elif result:
             return jsonify(DeleteStatus="OK"), 200
+        else:
+            return jsonify(Error="Part not found."), 404
 
     def updatePart(self, pid, json):
         dao = PartsDAO()
@@ -110,7 +120,12 @@ class PartHandler:
                 pprice = json['pprice']
                 ptype = json['ptype']
                 pname = json['pname']
-                if pprice and ptype and pname:
+
+                if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
+                    return jsonify("Error. Incorrect attribute type."), 400
+                elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
+                    return jsonify("Error. Incorrect attribute range."), 400
+                if (pprice >= 0) and ptype and pname:
                     dao.update(pid, pprice, ptype, pname)
                     result = self.build_part_attributes(pid, pprice, ptype, pname)
                     return jsonify(Part=result), 200

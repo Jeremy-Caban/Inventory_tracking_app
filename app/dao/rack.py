@@ -1,6 +1,6 @@
 from app.config import dbconfig
 import psycopg2
-
+from psycopg2 import errors
 
 # TODO(xavier)
 class RackDAO:
@@ -114,14 +114,18 @@ class RackDAO:
         return rid
 
     def delete(self, rid):
-        cursor = self.conn.cursor()
-        query = '''
-            delete from rack where rid = %s;
-        '''
-        cursor.execute(query, (rid,))
-        self.conn.commit()
-        cursor.close()
-        return rid
+        try:
+            cursor = self.conn.cursor()
+            query = '''
+                delete from rack where rid = %s;
+            '''
+            cursor.execute(query, (rid,))
+            self.conn.commit()
+            cursor.close()
+            return rid
+        except errors.ForeignKeyViolation as error:
+            self.conn.rollback()
+            return -1
 
     def get_parts_in_rack(self, rid):
         cursor = self.conn.cursor()
@@ -197,3 +201,34 @@ class RackDAO:
         result = [row for row in cursor]
         cursor.close()
         return result
+
+    def rack_in_warehouse_validation(self, wid, pid):
+        cursor = self.conn.cursor()
+        query = '''with test as (select rid
+                from rack natural inner join warehouse
+                where wid = %some and pid = %s)
+                select rid
+                from rack
+                where rid IN (select * from test);
+                '''
+        cursor.execute(query, (wid, pid))
+        result = cursor.fetchone()
+        if result:
+            return None
+        else:
+            return 1
+    def update_rack_in_warehouse_validation(self, pid, wid, rid):
+        cursor = self.conn.cursor()
+        query = '''with test as (select rid
+                    from rack natural inner join warehouse
+                    where wid = %s
+                    and pid = %s)
+                    select *
+                    from rack
+                    where rid IN (select * from test) and rid<>%s;'''
+        cursor.execute(query, (wid, pid, rid))
+        result = cursor.fetchone()
+        if result:
+            return None
+        else:
+            return 1

@@ -28,8 +28,11 @@ class RackHandler:
     def get_all_racks(self):
         dao = RackDAO()
         rack_list = dao.get_all_racks()
-        result = [self.build_rack_dict(row) for row in rack_list]
-        return jsonify(Racks=result)
+        if rack_list:
+            result = [self.build_rack_dict(row) for row in rack_list]
+            return jsonify(Racks=result)
+        else:
+            return jsonify("No racks found."), 404
 
     def get_rack_by_id(self, rid):
         dao = RackDAO()
@@ -95,10 +98,18 @@ class RackHandler:
         if pid is not None and PartsDAO().getPartById(pid) is None:
             return jsonify(Error='Part does not exist'), 404
 
-        dao = RackDAO()
-        rid = dao.insert(capacity, quantity, pid, wid)
-        result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
-        return jsonify(Rack=result), 201
+        result1 = RackDAO.rack_in_warehouse_validation()
+        if result1 is None:
+            return jsonify(f"A Rack with part {pid} is already in Warehouse {wid}."), 400
+
+        if not isinstance(capacity, int) or not isinstance(pid, int) or not isinstance(quantity, int) or not isinstance(wid, int):
+            return jsonify("Error: Incorrect attribute type or length."), 400
+
+        if capacity and (0 <= quantity <= capacity) and pid and wid:
+            dao = RackDAO()
+            rid = dao.insert(capacity, quantity, pid, wid)
+            result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
+            return jsonify(Rack=result), 201
 
     # Assume that if quantity field is not set, user meant for it to be 0
     def update_rack(self, rid, form):
@@ -121,10 +132,24 @@ class RackHandler:
         if pid is not None and PartsDAO().getPartById(pid) is None:
             return jsonify(Error='Part does not exist'), 404
         if capacity < quantity:
-            return jsonify(Error='Quantity cannot be greater than capacity.'),400
-        dao.update(rid, capacity, quantity, pid, wid)
-        result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
-        return jsonify(Rack=result), 201
+            return jsonify(Error='Quantity cannot be greater than capacity.'), 400
+
+        result1 = RackDAO.update_rack_in_warehouse_validation()
+        if result1 is None:
+            return jsonify(f"A Rack with part {pid} is already in Warehouse {wid}."), 400
+
+        if not isinstance(capacity, int) or not isinstance(pid, int) or not isinstance(quantity, int) or not isinstance(
+                wid, int):
+            return jsonify("Error: Incorrect attribute type or length."), 400
+
+        if capacity and (0 <= quantity <= capacity) and pid and wid:
+            flag = dao.update(rid, capacity, quantity, pid, wid)
+            result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
+            if flag:
+                return jsonify(Rack=result), 201
+            else:
+                return jsonify("Not Found."), 404
+            return jsonify("Unexpected attribute values."), 400
 
     # TODO(xavier) have to make sure rack does not have parts
     def delete_rack(self, rid):
@@ -134,4 +159,7 @@ class RackHandler:
         if len(dao.get_parts_in_rack(rid)) == 0:
             return jsonify(Error="Cannot delete non empty rack")
         response = dao.delete(rid)
-        return jsonify(DeletedStatus='OK', row=response), 200
+        if response == -1:
+            return jsonify(Error=f"Rack {rid} cannot be deleted because it is still referenced in transaction."), 400
+        elif response:
+            return jsonify(DeletedStatus='OK', row=response), 200
