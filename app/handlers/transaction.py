@@ -93,6 +93,8 @@ class TransactionHandler:
             raise ValueError('Provided UID invalid')
         if not warehouse_row:
             raise ValueError('Provided WID invalid')
+        
+        if tquantity <=0 or ttotal <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
 
         supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
         if not supid:
@@ -188,7 +190,7 @@ class TransactionHandler:
         #create entry in incoming transactions
         incid = incoming_dao.insert_incoming(wid, tid)
         tdate = incoming_dao.get_transaction_date(tid)
-        attr_array = [tid, incid, tdate, tquantity, ttotal, pid, sid, rid, uid, wid]
+        attr_array = [tid, incid, wid, tdate, tquantity, ttotal, pid, sid, rid, uid]
 
         warehouse_budget = warehouse_dao.get_warehouse_budget(wid)
         new_budget = warehouse_budget - ttotal
@@ -198,7 +200,7 @@ class TransactionHandler:
         new_quantity = rack_dao.get_rack_quantity(rid) + tquantity
         rid = rack_dao.set_rack_quantity(rid, new_quantity)
 
-        new_stock = supplier_dao.get_supplier_supplies_stock_by_sid_and_pid(sid, pid)
+        new_stock = supplier_dao.get_supplier_supplies_stock_by_sid_and_pid(sid, pid) - tquantity
         sid, pid = supplier_dao.edit_supplies_stock_by_sid_and_pid(sid, pid, new_stock)
 
         result = self.build_attributes_dict(attr_array, 'incoming')
