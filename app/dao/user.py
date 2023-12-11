@@ -104,15 +104,23 @@ class UserDAO:
 
     def getUserReceivesMost(self, wid, amount):
         cursor = self.conn.cursor()
+        # query = '''
+        # select uid, count(tid)
+        # from public.user u natural inner join transaction
+        # where u.wid = %s
+        # group by uid
+        # order by count(tid) desc
+        # limit %s
+        # '''
         query = '''
         select uid, count(tid)
-        from public.user u natural inner join transaction
-        where u.wid = %s
+        from transfert natural inner join transaction
+        where incoming_wid = %s or outgoing_wid = %s
         group by uid
         order by count(tid) desc
         limit %s
         '''
-        cursor.execute(query, (wid, amount))
+        cursor.execute(query, (wid, wid, amount))
         result = [row for row in cursor]
         cursor.close()
         return result
