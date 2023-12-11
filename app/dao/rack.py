@@ -69,6 +69,20 @@ class RackDAO:
         cursor.close()
         return result
 
+    def get_most_expensive_racks2(self, wid):
+        cursor = self.conn.cursor()
+        query = '''
+        select rid, pprice*rack.quantity as total_price from rack natural inner join parts
+        where wid = 7
+        order by total_price desc
+        limit 3;
+        '''
+        cursor.execute(query, (wid,))
+        self.conn.commit()
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+
     #TODO prob belongs in parts
     #weird return bc of its being built as regular parts
     def get_warehouse_rack_bottom_material(self, wid, amount):

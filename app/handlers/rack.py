@@ -68,8 +68,8 @@ class RackHandler:
             return jsonify(Error='User not found'), 404
         if user_warehouse_tuple[0] != wid:
             return jsonify(Error='User has no access to warehouse.'), 403
-        rack_list = dao.get_most_expensive_racks(wid, amount)
-        result = [self.build_rack_dict(row) for row in rack_list]
+        rack_list = dao.get_most_expensive_racks2(wid)
+        result = [{"rid":row[0], "total_price":row[1]} for row in rack_list]
         return jsonify(Racks=result)
 
     def get_warehouse_rack_bottom_material(self, wid, json, amount=3):
