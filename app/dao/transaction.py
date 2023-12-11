@@ -194,6 +194,23 @@ class TransactionDAO:
         cursor.close()
         return incid
     
+
+    '''so basicamente el array te da uno de 3 resultados:
+        true = el transaction es valido
+        false = el transaction no es valido
+        empty = no existe los connections entre uid, wid, rid, etc.
+    '''
+    def validate_incoming(self, tquant, uid, wid, rid, pid, sid):
+        cursor = self.conn.cursor()
+        query = '''
+        select (budget-pprice*%s >= 0 and quantity + %s <= capacity and stock - %s >=0) as valid
+        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
+        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        '''
+        cursor.execute(query, (tquant, tquant, tquant, uid, wid, rid, pid, sid))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
     #----------------------dao for outgoing----------------------
     def get_all_outgoing(self):
         cursor = self.conn.cursor()
