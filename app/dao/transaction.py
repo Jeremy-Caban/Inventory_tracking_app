@@ -303,3 +303,32 @@ class TransactionDAO:
 
     # def insert_to_master_table(self, tid):
     #     return
+
+
+
+    def is_exchange_incoming_valid(self,tquant, uid, wid, rid, pid, sid):
+        cursor = self.conn.cursor()
+        query = '''
+        select (budget-pprice*%s >= 0 and quantity + %s <= capacity) as valid
+        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
+        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        '''
+        cursor.execute(query, (tquant, tquant, uid, wid, rid, pid, sid))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+    
+    
+    def is_exchange_outgoing_valid(self,tquant, uid, wid, rid, pid, sid):
+        cursor = self.conn.cursor()
+        query = '''
+        select (rack.quantity - %s >=0) as valid
+        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
+        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        '''
+        cursor.execute(query, (tquant, uid, wid, rid, pid, sid))
+        result = [row for row in cursor]
+        cursor.close()
+        return result
+    
+    

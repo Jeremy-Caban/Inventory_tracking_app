@@ -438,10 +438,25 @@ class TransactionHandler:
         incoming_uid = json.get('incoming_uid', None)
         outgoing_wid = json.get('outgoing_wid', None)
         incoming_wid = json.get('incoming_wid', None)
-        try:
-            self.validate_exchange(tquantity,ttotal,pid,sid, outgoing_rid, incoming_rid, outgoing_uid, incoming_uid, outgoing_wid, incoming_wid)
-        except ValueError as e:
-            return jsonify(Error = e.args[0]), 400
+
+        if tquantity <=0 or ttotal <=0: return jsonify(Error = 'tquantity and ttotal shouldnt be less than zero'), 400
+
+        outgoing_arr_val = TransactionDAO().is_exchange_outgoing_valid(tquantity,outgoing_uid,outgoing_wid,outgoing_rid,pid,sid)
+        incoming_arr_val = TransactionDAO().is_exchange_incoming_valid(tquantity,incoming_uid,incoming_wid,incoming_rid,pid,sid)
+
+        if not outgoing_arr_val: return jsonify(Error = 'invalid outgoing entities'), 400
+        elif not outgoing_arr_val[0][0]: return jsonify(Error = 'not enough part quantity inside outgoing rack'), 400
+
+        if not incoming_arr_val: return jsonify(Error = 'invalid incoming entities'), 400
+        elif not incoming_arr_val[0][0]: return jsonify(Error = 'not enough budget/capacity'), 400
+
+        pprice = PartsDAO().get_part_price(pid)
+        if tquantity*pprice != ttotal: return jsonify(Error = 'Calculated total does not match provided total'), 400
+
+        # try:
+        #     self.validate_exchange(tquantity,ttotal,pid,sid, outgoing_rid, incoming_rid, outgoing_uid, incoming_uid, outgoing_wid, incoming_wid)
+        # except ValueError as e:
+        #     return jsonify(Error = e.args[0]), 400
 
         rack_dao = RackDAO()
         curr_quantity = rack_dao.get_rack_quantity(outgoing_rid)
@@ -470,9 +485,6 @@ class TransactionHandler:
 
         incoming_new_quantity = rack_dao.get_rack_quantity(incoming_rid) + tquantity
         rack_dao.set_rack_quantity(incoming_rid, incoming_new_quantity)
-
-        incoming_new_stock = supplier_dao.get_supplier_supplies_stock_by_sid_and_pid(sid, pid) - tquantity
-        supplier_dao.edit_supplies_stock_by_sid_and_pid(sid, pid, incoming_new_stock)
 
         incoming_tid = dao.insert_transaction(tquantity, ttotal, pid, sid, incoming_rid, incoming_uid)
         incoming_tranid = dao.insert_exchange(outgoing_wid, incoming_wid, incoming_tid)
