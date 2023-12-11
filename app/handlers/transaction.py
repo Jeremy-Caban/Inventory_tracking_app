@@ -425,7 +425,7 @@ class TransactionHandler:
 
 
     def insert_exchange(self, json):
-        if len(json)!=8: return jsonify(Error = 'Malformed json'), 400
+        if len(json)!=10: return jsonify(Error = 'Malformed json'), 400
         tquantity = json.get('tquantity', None)
         ttotal = json.get('ttotal', None)
         pid = json.get('pid', None)
