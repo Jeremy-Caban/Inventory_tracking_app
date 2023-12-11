@@ -79,6 +79,8 @@ class RackHandler:
         uid = json.get('User_id', None)
         user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
         if not user_warehouse_tuple:
+            return jsonify(Error='User not found'), 404
+        if user_warehouse_tuple[0] != wid:
             return jsonify(Error='User has no access to warehouse'), 403
         rack_list = dao.get_warehouse_rack_bottom_material(wid, amount)
         result = [self.build_bottom_material(row) for row in rack_list]
