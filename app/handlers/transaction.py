@@ -157,6 +157,8 @@ class TransactionHandler:
         user_warehouse_tuple = UserDAO().getUserWarehouse(uid)
         if not user_warehouse_tuple:
             return jsonify(Error='User has no access to warehouse'), 403
+        if user_warehouse_tuple[0] != wid: #added this validation
+            return jsonify(Error='User has no access to warehouse.'), 403
         transaction_list = dao.get_warehouse_least_cost(wid, amount)
         result = [self.build_least_cost_dict(row) for row in transaction_list]
         return jsonify(Dates=result)
