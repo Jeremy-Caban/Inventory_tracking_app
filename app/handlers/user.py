@@ -133,7 +133,7 @@ class UserHandler:
             return jsonify(Error = 'User has no access to warehouse'), 403
         user_list = dao.getUserReceivesMost(wid, amount)
         result = [dict(zip(['uid','count'],row)) for row in user_list]
-        return result
+        return jsonify(Users=result)
     
     def getUsersWithMostTransactions(self, amount = 3):
         dao = UserDAO()
