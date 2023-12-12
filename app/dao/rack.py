@@ -228,21 +228,20 @@ class RackDAO:
         cursor.execute(query, (wid, pid))
         result = cursor.fetchone()
         if result:
-            return None
+            return True
         else:
-            return 1
+            return False
     def update_rack_in_warehouse_validation(self, pid, wid, rid):
         cursor = self.conn.cursor()
-        query = '''with test as (select rid
-                    from rack natural inner join warehouse
-                    where wid = %s
-                    and pid = %s)
-                    select *
-                    from rack
-                    where rid IN (select * from test) and rid<>%s;'''
-        cursor.execute(query, (wid, pid, rid))
+        query = '''
+            select exists (
+                select 1
+                from rack
+                where pid = %s
+                    and wid = %s
+                    and rid <> %s
+            ) as rack_exists;
+        '''
+        cursor.execute(query, (pid, wid, rid))
         result = cursor.fetchone()
-        if result:
-            return None
-        else:
-            return 1
+        return result[0]
