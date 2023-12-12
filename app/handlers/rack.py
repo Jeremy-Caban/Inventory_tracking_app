@@ -6,7 +6,6 @@ from app.dao.parts import PartsDAO
 from app.dao.user import UserDAO
 
 
-# TODO(xavier)
 class RackHandler:
     def build_rack_dict(self, rows):
         keys = ['rid', 'capacity', 'wid', 'quantity', 'pid']
@@ -100,7 +99,7 @@ class RackHandler:
         if pid is not None and PartsDAO().getPartById(pid) is None:
             return jsonify(Error='Part does not exist'), 404
 
-        result1 = RackDAO.rack_in_warehouse_validation()
+        result1 = RackDAO().rack_in_warehouse_validation(wid, pid)
         if result1 is None:
             return jsonify(f"A Rack with part {pid} is already in Warehouse {wid}."), 400
 

@@ -220,7 +220,7 @@ class RackDAO:
         cursor = self.conn.cursor()
         query = '''with test as (select rid
                 from rack natural inner join warehouse
-                where wid = %some and pid = %s)
+                where wid = %s and pid = %s)
                 select rid
                 from rack
                 where rid IN (select * from test);
