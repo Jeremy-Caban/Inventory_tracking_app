@@ -93,24 +93,29 @@ class RackHandler:
 
         if wid is None or not WarehouseDAO().get_warehouse_by_id(wid):
             return jsonify(Error='Provided warehouse ID not found.')
-        if capacity == 0:
-            return jsonify(Error='Rack capacity cannot be 0.')
 
-        if pid is not None and PartsDAO().getPartById(pid) is None:
+        if pid is None:
+            return jsonify(Error='Part ID not provided.')
+
+        if PartsDAO().getPartById(pid) is None:
             return jsonify(Error='Part does not exist'), 404
 
-        result1 = RackDAO().rack_in_warehouse_validation(wid, pid)
-        if result1 is None:
-            return jsonify(f"A Rack with part {pid} is already in Warehouse {wid}."), 400
+        if capacity <= 0:
+            return jsonify(Error='Rack capacity invalid.'), 400
 
-        if not isinstance(capacity, int) or not isinstance(pid, int) or not isinstance(quantity, int) or not isinstance(wid, int):
-            return jsonify("Error: Incorrect attribute type or length."), 400
+        if quantity > capacity or quantity < 0:
+            return jsonify(Error="Rack quantity invalid."), 400
 
-        if capacity and (0 <= quantity <= capacity) and pid and wid:
-            dao = RackDAO()
-            rid = dao.insert(capacity, quantity, pid, wid)
-            result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
-            return jsonify(Rack=result), 201
+        dao = RackDAO()
+
+        in_warehouse = dao.rack_in_warehouse_validation(wid, pid)
+        if in_warehouse is None:
+            return jsonify(Error=f"A Rack with part {pid} is already in Warehouse {wid}."), 400
+
+        rid = dao.insert(capacity, quantity, pid, wid)
+        result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
+        return jsonify(Rack=result), 201
+
 
     # Assume that if quantity field is not set, user meant for it to be 0
     def update_rack(self, rid, form):
