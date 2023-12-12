@@ -60,45 +60,29 @@ class PartHandler:
             result_list.append(result)
         return jsonify(Parts=result_list)
 
-    def insertPart(self, form):
-        print("form: ", form, 'len ', len(form.request))
-        if len(form) != 3:
-            return jsonify(Error="Malformed post request"), 400
-        else:
-            pprice = form["pprice"]
-            ptype = form["ptype"]
-            pname = form["pname"]
-            if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
-                return jsonify("Error. Incorrect attribute type."), 400
-            elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
-                return jsonify("Error. Incorrect attribute range."), 400
-            if pprice and ptype and pname:
-                dao = PartsDAO()
-                pid = dao.insert(pprice, ptype, pname)
-                result = self.build_part_attributes(
-                    pid, pprice, ptype, pname
-                )
-                return jsonify(Part=result), 201
-            else:
-                return jsonify(Error="Unexpected attributes in post request"), 400
+    def insert_part(self, json):
+        pprice = json.get('pprice')
+        pname = json.get('pname')
+        ptype = json.get('ptype')
+        if pprice is None:
+            return jsonify(Error = 'Part price not provided.')
+        if pname is None or len(pname) == 0:
+            return jsonify(Error = 'Part name not provided.')
+        if ptype is None or len(ptype) == 0:
+            return jsonify(Error = 'Part type not provided.')
+        if len(pname) > 100 or len(ptype) > 100:
+            return jsonify(Error = 'Part name/type too long.')
+        if not isinstance(pprice, (int,float)) and not pprice.isnumeric() or pprice <= 0:
+            return jsonify(Error = 'Part price not valid.')
+        if not isinstance(ptype, str) or not ptype.isascii():
+            return jsonify(Error = 'Part type not valid.')
+        if not isinstance(pname, str) or not ptype.isascii():
+            return jsonify(Error = 'Part name not valid.')
+        dao = PartsDAO()
+        pid = dao.insert(pprice, ptype, pname)
+        result = self.build_part_attributes(pid, pprice, ptype, pname)
+        return jsonify(Part=result)
 
-    def insertPartJson(self, json):
-        if len(json) != 3: return jsonify(Error="Malformed Post request"), 400
-        pprice = json['pprice']
-        ptype = json['ptype']
-        pname = json['pname']
-        if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
-            return jsonify("Error. Incorrect attribute type."), 400
-        elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
-            return jsonify("Error. Incorrect attribute range."), 400
-        if (pprice >= 0) and ptype and pname:
-            dao = PartsDAO()
-            pid = dao.insert(pprice, ptype, pname)
-            result = self.build_part_attributes(pid, pprice, ptype, pname)
-            return jsonify(Part=result), 201
-        else:
-            return jsonify(Error="Unexpected attributes in post request"), 400
-        
     def deletePart(self, pid):
         dao = PartsDAO()
         result = dao.delete(pid)
@@ -106,28 +90,33 @@ class PartHandler:
             return jsonify("Error. Part {pid} cannot be deleted because it is still referenced in a rack."), 400
         elif result:
             return jsonify(DeleteStatus="OK"), 200
-        else:
-            return jsonify(Error="Part not found."), 404
+        return jsonify(Error="Part not found."), 404
 
-    def updatePart(self, pid, json):
+    def update_part(self, pid, form):
+        #assume that part types/names can have numbers in them
+        #something like red40
         dao = PartsDAO()
         if not dao.getPartById(pid):
             return jsonify(Error="Part not found."), 404
-        else:
-            if len(json) != 3:
-                return jsonify(Error="Malformed update request"), 400
-            else:
-                pprice = json['pprice']
-                ptype = json['ptype']
-                pname = json['pname']
-
-                if not isinstance(pprice, (int, float)) or not isinstance(ptype, str) or not isinstance(pname, str):
-                    return jsonify("Error. Incorrect attribute type."), 400
-                elif pprice < 0 or len(ptype) > 100 or len(pname) > 100:
-                    return jsonify("Error. Incorrect attribute range."), 400
-                if (pprice >= 0) and ptype and pname:
-                    dao.update(pid, pprice, ptype, pname)
-                    result = self.build_part_attributes(pid, pprice, ptype, pname)
-                    return jsonify(Part=result), 200
-                else:
-                    return jsonify(Error="Unexpected attributes in update request"), 400
+        pprice = form.get('pprice')
+        pname = form.get('pname')
+        ptype = form.get('ptype')
+        if pprice is None:
+            return jsonify(Error = 'Part price not provided.')
+        if pname is None or len(pname) == 0:
+            return jsonify(Error = 'Part name not provided.')
+        if ptype is None or len(ptype) == 0:
+            return jsonify(Error = 'Part type not provided.')
+        if len(pname) > 100 or len(ptype) > 100:
+            return jsonify(Error = 'Part name/type too long.')
+        if not isinstance(pprice, (int,float)) and not pprice.isnumeric():
+            return jsonify(Error = 'Part price not valid.')
+        if not isinstance(ptype, str) or not ptype.isascii():
+            return jsonify(Error = 'Part type not valid.')
+        if not isinstance(pname, str) or not ptype.isascii():
+            return jsonify(Error = 'Part name not valid.')
+        if float(pprice) <= 0:
+            return jsonify(Error = 'Part price cannot be 0.')
+        dao.update(pid, pprice, ptype, pname)
+        result = self.build_part_attributes(pid, pprice, ptype, pname)
+        return jsonify(Part=result), 200

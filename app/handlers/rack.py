@@ -158,7 +158,6 @@ class RackHandler:
         return jsonify(Rack=result), 201
 
 
-    # TODO(xavier) have to make sure rack does not have parts
     def delete_rack(self, rid):
         dao = RackDAO()
         if not dao.get_rack_by_id(rid):

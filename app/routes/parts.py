@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request
 def getAllParts():
     if request.method == 'POST':
         print("REQUEST: ", request.json)
-        return PartHandler().insertPartJson(request.json)
+        return PartHandler().insert_part(request.json)
     else:
         if not request.args:
             return PartHandler().getAllParts()
@@ -20,7 +20,7 @@ def getPartById(pid):
     if request.method == 'GET':
         return PartHandler().getPartById(pid)
     elif request.method == 'PUT':
-        return PartHandler().updatePart(pid, request.json)
+        return PartHandler().update_part(pid, request.form)
     elif request.method == 'DELETE':
         return PartHandler().deletePart(pid)
     else:
