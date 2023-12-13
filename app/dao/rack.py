@@ -48,32 +48,11 @@ class RackDAO:
         cursor.close()
         return result
 
-    def get_most_expensive_racks(self, wid, amount):
-        cursor = self.conn.cursor()
-        query = '''
-        SELECT r.rid, r.capacity, r.quantity, p.pprice, r.pid, r.wid, (p.pprice * r.quantity) AS total_price
-        FROM (
-           SELECT *
-           FROM warehouse w
-           NATURAL INNER JOIN rack rk
-           WHERE w.wid = %s
-        ) AS r
-        INNER JOIN parts p ON r.pid = p.pid
-        GROUP BY r.rid, r.capacity, r.quantity, p.pprice, r.pid, r.wid
-        ORDER BY total_price DESC
-        LIMIT %s;
-        '''
-        cursor.execute(query, (wid, amount))
-        self.conn.commit()
-        result = [row for row in cursor]
-        cursor.close()
-        return result
-
-    def get_most_expensive_racks2(self, wid):
+    def get_most_expensive_racks(self, wid):
         cursor = self.conn.cursor()
         query = '''
         select rid, pprice*rack.quantity as total_price from rack natural inner join parts
-        where wid = 7
+        where wid = %s
         order by total_price desc
         limit 3;
         '''
