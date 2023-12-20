@@ -1,6 +1,6 @@
 #Databse configuration information
-user = 'ynnukhpihtznfx'
-password = 'f1445b87683be398b7016da9f02d41d76b3b4790543bff33453a9ce7d5138d3f'
-dbname = 'd1kfjtr76jofoi'
-host = 'ec2-54-211-177-159.compute-1.amazonaws.com'
+user = 'ludvvybxgqlvga'
+password = '01b3d7934c9693ed13deca6d885b448ded2726501a968367ade6ce4f1cfd6b47'
+dbname = 'dcgt42n6h5b6dd'
+host = 'ec2-3-233-79-30.compute-1.amazonaws.com'
 port = 5432
