@@ -42,8 +42,8 @@ def app():
         "TESTING": True,
     })
     
+    reset_db() # start with a clean slate
     yield app
-    # reset_db() # comment if u want to inspect db
 
 @pytest.fixture()
 def client(app):
