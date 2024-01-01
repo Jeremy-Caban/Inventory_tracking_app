@@ -65,23 +65,23 @@ class PartHandler:
         pname = json.get('pname')
         ptype = json.get('ptype')
         if pprice is None:
-            return jsonify(Error = 'Part price not provided.')
+            return jsonify(Error = 'Part price not provided.'), 400
         if pname is None or len(pname) == 0:
-            return jsonify(Error = 'Part name not provided.')
+            return jsonify(Error = 'Part name not provided.'), 400
         if ptype is None or len(ptype) == 0:
-            return jsonify(Error = 'Part type not provided.')
+            return jsonify(Error = 'Part type not provided.'), 400
         if len(pname) > 100 or len(ptype) > 100:
-            return jsonify(Error = 'Part name/type too long.')
+            return jsonify(Error = 'Part name/type too long.'), 400
         if not isinstance(pprice, (int,float)) and not pprice.isnumeric() or pprice <= 0:
-            return jsonify(Error = 'Part price not valid.')
+            return jsonify(Error = 'Part price not valid.'), 400
         if not isinstance(ptype, str) or not ptype.isascii():
-            return jsonify(Error = 'Part type not valid.')
+            return jsonify(Error = 'Part type not valid.'), 400
         if not isinstance(pname, str) or not ptype.isascii():
-            return jsonify(Error = 'Part name not valid.')
+            return jsonify(Error = 'Part name not valid.'), 400
         dao = PartsDAO()
         pid = dao.insert(pprice, ptype, pname)
         result = self.build_part_attributes(pid, pprice, ptype, pname)
-        return jsonify(Part=result)
+        return jsonify(Part=result), 201
 
     def deletePart(self, pid):
         dao = PartsDAO()
