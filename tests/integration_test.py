@@ -77,7 +77,8 @@ def helper_test_posts(client, endpoint, post_data, expected_status, expected_res
     ({"pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 201),  # Successful case
     ({"pprice": 100.0, "pname": "Bolt"}, 400),  # Missing 'ptype'
     ({"pprice": "100.0", "ptype": "Steel", "pname": "Bolt"}, 400),  # Incorrect data type
-    ({"pprice": -50.0, "ptype": "Steel", "pname": "Bolt"}, 400)  # Invalid value
+    ({"pprice": -50.0, "ptype": "Steel", "pname": "Bolt"}, 400),  # Invalid value
+    ({"pprice": 0.0, "ptype": "Steel", "pname": "Bolt"}, 400)  # Invalid value
 ])
 def test_post_parts(client, data, status_code):
     expected_structure = {"Part": ["pid", "pname", "pprice", "ptype"]}
