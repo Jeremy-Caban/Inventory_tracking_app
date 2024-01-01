@@ -101,14 +101,14 @@ class WarehouseHandler:
         wcity = json.get('wcity', None)
         wemail = json.get('wemail',None)
         wphone = json.get('wphone', None)
-        budget = json.get('budget', 0)
-        if wname and wcity:
+        budget = json.get('budget', None)
+        if wname and wcity and wemail and wphone and budget and isinstance(budget, int) and budget > 0:
             dao = WarehouseDAO()
             wid = dao.insert(wname, wcity, wemail, wphone, budget, )
             result = self.build_warehouse_attributes(wid, wname, wcity,
                                                      wemail, wphone, budget)
             return jsonify(Warehouse=result), 201
-        return jsonify(Error="Unexpected/Missing attributes in request.")
+        return jsonify(Error="Unexpected/Missing attributes in request."), 400
 
     def update_warehouse(self, wid, form):
         KEYS_LENGTH = 6
