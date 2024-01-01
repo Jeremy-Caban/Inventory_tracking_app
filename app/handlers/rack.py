@@ -86,32 +86,30 @@ class RackHandler:
         return jsonify(Racks=result)
 
     def insert_rack(self, json):
-        capacity = json.get('capacity', 0)
+        capacity = json.get('capacity', None)
         wid = json.get('wid', None)
-        quantity = json.get('quantity', 0)
+        quantity = json.get('quantity', None)
         pid = json.get('pid', None)
 
-        if wid is None or not WarehouseDAO().get_warehouse_by_id(wid):
-            return jsonify(Error='Provided warehouse ID not found.')
-
-        if pid is None:
-            return jsonify(Error='Part ID not provided.')
-
-        if PartsDAO().getPartById(pid) is None:
+        if not wid:
+            return jsonify('Warehouse ID not provided'), 400
+        if not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error='Provided warehouse ID not found.'), 404
+        if not pid:
+            return jsonify(Error='Part ID not provided.'), 400
+        if not PartsDAO().getPartById(pid):
             return jsonify(Error='Part does not exist'), 404
-
-        if capacity <= 0:
+        # note: isinstance() already handles None values
+        if not isinstance(capacity, int) or capacity <= 0:
             return jsonify(Error='Rack capacity invalid.'), 400
-
-        if quantity > capacity or quantity < 0:
+        if not isinstance(quantity, int) or quantity > capacity or quantity < 0:
             return jsonify(Error="Rack quantity invalid."), 400
-
+        
         dao = RackDAO()
-
         in_warehouse = dao.rack_in_warehouse_validation(wid, pid)
         if in_warehouse:
             return jsonify(Error=f"A Rack with part {pid} is already in Warehouse {wid}."), 400
-
+        
         rid = dao.insert(capacity, quantity, pid, wid)
         result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
         return jsonify(Rack=result), 201
