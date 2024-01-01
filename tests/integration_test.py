@@ -118,11 +118,18 @@ def test_get_part(client, data, status_code):
 
 @pytest.mark.parametrize("rack_data, status_code", [
     ({"capacity": 100, "wid": 1, "quantity": 12, "pid": 1}, 201),  # Successful case
-    ({"capacity": 100, "wid": 2, "quantity": 12, "pid": 1}, 201),  # Successful case
     ({"capacity": 100, "wid": 1, "quantity": 12, "pid": 1}, 400),  # rack already exists in warehouse
-    ({"capacity": 100, "wid": 1, "quantity": 12}, 400),  # Missing 'pid'
-    ({"capacity": "large", "wid": 1, "quantity": 12, "pid": 1}, 400),  # Invalid capacity
-    ({"capacity": 100, "wid": 1, "quantity": -5, "pid": 1}, 400)  # Invalid quantity
+    ({"capacity": 0, "wid": 2, "quantity": 12, "pid": 1}, 400),  # Invalid capacity
+    ({"capacity": -100, "wid": 2, "quantity": 12, "pid": 1}, 400),  # Invalid capacity
+    ({"capacity": "100", "wid": 2, "quantity": 12, "pid": 1}, 400),  # Invalid capacity
+    ({"capacity": 100, "quantity": 12, "pid": 1}, 400),  # Missing 'wid'
+    ({"capacity": 100, "wid": 2, "quantity": 12}, 400),  # Missing 'pid'
+    ({"capacity": 100, "wid": 2, "quantity": 5, "pid": 99}, 404),  # pid doesnt exist
+    ({"capacity": 100, "wid": 99, "quantity": 5, "pid": 1}, 404),  # wid doesnt exist
+    ({"capacity": 100, "wid": 2, "quantity": -5, "pid": 1}, 400),  # Invalid quantity
+    ({"capacity": 100, "wid": 2, "quantity": "10", "pid": 1}, 400),  # Invalid quantity
+    ({"capacity": 100, "wid": 2, "quantity": 1000, "pid": 1}, 400),  # Invalid quantity - capacity is smaller than qaunt
+    ({"capacity": 100, "wid": 2, "quantity": 0, "pid": 1}, 201)  # Successful case
 ])
 def test_post_rack(client, rack_data, status_code):
     endpoint = base_url+'rack'
