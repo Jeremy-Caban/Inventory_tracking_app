@@ -206,7 +206,7 @@ class TransactionHandler:
         sid, pid = supplier_dao.edit_supplies_stock_by_sid_and_pid(sid, pid, new_stock)
 
         result = self.build_attributes_dict(attr_array, 'incoming')
-        return jsonify(Incoming=result)
+        return jsonify(Incoming=result), 201
 
 
     #UPDATE-----
