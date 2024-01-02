@@ -75,6 +75,7 @@ def helper_test_posts(client, endpoint, post_data, expected_status, expected_res
 # @pytest.mark.order(0)
 @pytest.mark.parametrize("data, status_code", [
     ({"pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 201),  # Successful case
+    ({"pprice": 1.0, "ptype": "wood", "pname": "stick"}, 201),  # Successful case
     ({"pprice": 100.0, "pname": "Bolt"}, 400),  # Missing 'ptype'
     ({"pprice": "100.0", "ptype": "Steel", "pname": "Bolt"}, 400),  # Incorrect data type
     ({"pprice": -50.0, "ptype": "Steel", "pname": "Bolt"}, 400),  # Invalid value
@@ -151,12 +152,31 @@ def test_post_user(client, data, status_code):
 
 @pytest.mark.parametrize("data, status_code", [
     ({ "sname":"Berrios Imports", "scity":"Moca", "sphone":"787-0DB-TEST", "semail":"test@gmail.com" }, 201),  # Successful case
+    ({ "sname":"Zalic", "scity":"trujillo", "sphone":"787-000-000", "semail":"12" }, 201),  # Successful case
     ({ "scity":"Moca", "sphone":"787-0DB-TEST", "semail":"test@gmail.com" }, 400),  # Missing 'sname'
     ({ "sname":"Berrios Imports", "scity":"Moca", "semail":"test@gmail.com" }, 400),  # Missing 'scity'
 ])
 def test_post_suppliers(client, data, status_code):
     endpoint = base_url + 'supplier'
     expected_structure = {"Supplier": ["sid", "sname", "scity", "sphone", "semail"]}
+    helper_test_posts(client, endpoint, data, status_code, expected_structure)
+
+@pytest.mark.parametrize("sid, data, status_code", [
+    (1, {"stock":10, "pid":1}, 201),  # Successful case
+    (1, {"stock":100, "pid":1}, 400),  # Supplier already supplies part
+    (1, {"stock":10, "pid":2}, 201),  # Successful case
+    (2, {"stock":0, "pid":2}, 400),  # Invalid stock
+    (2, {"stock":-10, "pid":2}, 400),  # Invalid stock
+    (2, {"stock":10, "pid":99}, 400),  # pid doesnt exist therefore is invalid
+    (2, {"stock":10, "pid":"2"}, 400),  # Invalid pid
+    (2, {"stock":"10", "pid":2}, 400),  # Invalid stock
+    (2, {"stock":10, "pid":2}, 201),  # Successful case
+    (2, {"stock":10, "pid":1}, 201),  # Successful case
+    (9, {"stock":10, "pid":1}, 404),  # sid doesnt exist therefore cant find supplier
+])
+def test_supply_parts(client, sid, data, status_code):
+    endpoint = base_url + f'supplier/{sid}/parts'
+    expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
     helper_test_posts(client, endpoint, data, status_code, expected_structure)
 
 
