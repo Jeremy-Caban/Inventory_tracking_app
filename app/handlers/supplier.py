@@ -158,11 +158,11 @@ class SupplierHandler:
         dao = SupplierDAO()
         parts_dao = PartsDAO()
 
-        if not sid or not dao.get_supplier_by_ID(sid): return jsonify(Error='Supplier not found'), 404
-        if not pid or not parts_dao.getPartById(pid): return jsonify(Error='Part not found'), 404
-        if type(stock) != int and stock < 0: return jsonify(
+        if not isinstance(sid,int) or not dao.get_supplier_by_ID(sid): return jsonify(Error='Supplier not found'), 404 #404 because you get the sid from the url
+        if not isinstance(pid, int) or not parts_dao.getPartById(pid): return jsonify(Error='Part not found'), 400
+        if not isinstance(stock, int) or stock <= 0: return jsonify(
             Error='Malformed request, stock must be a postive integer'), 400
-        if dao.get_supply_by_sid_and_pid(sid, pid): return jsonify(Error='Supplier already supplies the part'), 406
+        if dao.get_supply_by_sid_and_pid(sid, pid): return jsonify(Error='Supplier already supplies the part'), 400
 
         supid = dao.supplyPart(stock, sid, pid)
         supplies_dict = self.build_supplies_attributes(supid, stock, sid, pid)
