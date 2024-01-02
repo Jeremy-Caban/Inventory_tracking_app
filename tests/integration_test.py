@@ -208,5 +208,5 @@ def test_post_transaction(client, data, status_code):
     helper_test_posts(client, endpoint, data, status_code, expected_structure)
     tquant = data['tquantity']
     assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == budget - pprice*tquant
-    assert rack.RackDAO().get_rack_quantity() == rack_quant+tquant
+    assert rack.RackDAO().get_rack_quantity(rid) == rack_quant+tquant
     assert supplier.SupplierDAO().get_supplier_supplies_stock_by_sid_and_pid(sid,pid) == stock - tquant
