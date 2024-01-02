@@ -79,7 +79,7 @@ class UserHandler:
         uphone = json['uphone']
         wid = json['wid']
         warehouse_dao = WarehouseDAO()
-        if not warehouse_dao.get_warehouse_by_id(wid):
+        if not isinstance(wid,int) or not warehouse_dao.get_warehouse_by_id(wid):
             return jsonify(Error = 'Warehouse does not exist'), 400
 
         if fname and lname and uemail and uphone and wid:
