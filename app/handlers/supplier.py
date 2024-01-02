@@ -67,7 +67,7 @@ class SupplierHandler:
                 sid = dao.insert(sname, scity, sphone, semail)
                 result = self.build_supplier_attributes(sid, sname, scity, sphone, semail)
                 return jsonify(Supplier=result), 201
-        return jsonify(Error="Unexpected/Missing attributes in request.")
+        return jsonify(Error="Unexpected/Missing attributes in request."), 400
 
     # works!
     def get_supplier_by_id(self, sid):
