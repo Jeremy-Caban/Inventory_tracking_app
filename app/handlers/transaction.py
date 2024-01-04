@@ -350,8 +350,8 @@ class TransactionHandler:
         new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal
         wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
 
-        new_quantity = curr_quantity - tquantity
-        rid = rack_dao.set_rack_quantity(rid, new_quantity)
+        new_quantity = RackDAO().get_rack_quantity(rid) - tquantity
+        rid = RackDAO().set_rack_quantity(rid, new_quantity)
 
         result = self.build_attributes_dict(attr_array, "outgoing")
         return jsonify(Outgoing=result)
