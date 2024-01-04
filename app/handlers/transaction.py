@@ -104,6 +104,9 @@ class TransactionHandler:
         user_wid = user_dao.getUserWarehouse(uid)[0]
         if user_wid != wid:
             raise ValueError('User does work for given warehouse')
+        
+        if rack_dao.get_rack_warehouse(rid)[0] != wid:
+            raise ValueError('Rack does not exist in warehouse')
 
         rack_pid = rack_dao.get_rack_part(rid)[0]
         if rack_pid != pid:
