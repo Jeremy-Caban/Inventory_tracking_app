@@ -170,7 +170,7 @@ class TransactionHandler:
     def insert_incoming(self, json):
         KEYS_LENGTH = 7 #modify to fit all needed attr
         if len(json) != KEYS_LENGTH:
-            return jsonify(Error='Incorrent amount of keys sent in POST')
+            return jsonify(Error='Incorrent amount of keys sent in POST'), 400
         pid = json.get('pid')
         sid = json.get('sid')
         rid = json.get('rid')
