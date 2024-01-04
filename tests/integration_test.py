@@ -130,7 +130,8 @@ def test_get_part(client, data, status_code):
     ({"capacity": 100, "wid": 2, "quantity": -5, "pid": 1}, 400),  # Invalid quantity
     ({"capacity": 100, "wid": 2, "quantity": "10", "pid": 1}, 400),  # Invalid quantity
     ({"capacity": 100, "wid": 2, "quantity": 1000, "pid": 1}, 400),  # Invalid quantity - capacity is smaller than qaunt
-    ({"capacity": 100, "wid": 2, "quantity": 0, "pid": 1}, 201)  # Successful case
+    ({"capacity": 100, "wid": 2, "quantity": 0, "pid": 1}, 201),  # Successful case
+    ({"capacity": 100, "wid": 2, "quantity": 99, "pid": 2}, 201)  # Successful case
 ])
 def test_post_rack(client, rack_data, status_code):
     endpoint = base_url+'rack'
@@ -189,7 +190,8 @@ how to test transactions
 """
 
 @pytest.mark.parametrize("data, status_code", [
-    ({"tquantity":1,"ttotal":100,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":2,"ttotal":200,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":1,"wid":1}, 400),  # Rack doesnt exist in warehouse
 
 ])
 def test_post_transaction(client, data, status_code):
@@ -206,7 +208,8 @@ def test_post_transaction(client, data, status_code):
 
     endpoint = base_url + 'incoming'
     expected_structure = {"Incoming": ["icid", "tdate", "tquantity", "ttotal", "uid", "wid", "rid", "pid", "sid", "tid"]}
-    helper_test_posts(client, endpoint, data, status_code, expected_structure)
+    if not helper_test_posts(client, endpoint, data, status_code, expected_structure): 
+        return
     tquant = data['tquantity']
     assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == budget - pprice*tquant
     assert rack.RackDAO().get_rack_quantity(rid) == rack_quant+tquant
