@@ -71,6 +71,21 @@ class TransactionHandler:
         """
         Checks entities exist and that the transaction is overall valid.
         """
+        if not isinstance(pid, int):
+            raise ValueError('pid needs to be a positive number')
+        if not isinstance(sid, int):
+            raise ValueError('sid needs to be a positive number')
+        if not isinstance(rid, int):
+            raise ValueError('rid needs to be a positive number')
+        if not isinstance(uid, int):
+            raise ValueError('uid needs to be a positive number')
+        if not isinstance(wid, int):
+            raise ValueError('wid needs to be a positive number')
+        if not isinstance(tquantity, int):
+            raise ValueError('tquantity needs to be a positive number')
+        if not isinstance(ttotal, int):
+            raise ValueError('ttotal needs to be a positive number')
+                 
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
         rack_dao = RackDAO()
