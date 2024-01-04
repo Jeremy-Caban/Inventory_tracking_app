@@ -202,9 +202,13 @@ how to test transactions
     ({"tquantity":5,"ttotal":500,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # Not enough stock
     ({"tquantity":5,"ttotal":500,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  #Succesful case testing another supplier
     # test entity relationships
-    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":3,"wid":1}, 400),  # User does not work in warehouse
-    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":1,"wid":1}, 400),  # Rack doesnt exist in warehouse
-    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":1,"wid":1}, 400),  # Rack doesnt exist in warehouse
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":2,"wid":2}, 400),  # User does not work in warehouse
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":1,"uid":3,"wid":2}, 400),  # Rack doesnt exist in warehouse
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":1}, 400),  # Wrong Warehouse 
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":99,"rid":2,"uid":3,"wid":2}, 400),  # Invalid supplier
+    ({"tquantity":1,"ttotal":100,"pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid Part
+    ({"tquantity":1,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Missing ttotaL
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  # Rack doesnt exist in warehouse
 
 ])
 def test_post_transaction(client, data, status_code):
