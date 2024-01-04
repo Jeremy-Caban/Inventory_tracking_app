@@ -191,6 +191,19 @@ how to test transactions
 
 @pytest.mark.parametrize("data, status_code", [
     ({"tquantity":2,"ttotal":200,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+    # test warehouse budget
+    ({"tquantity":3,"ttotal":300,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case, note: warehouse budget is now 0
+    ({"tquantity":3,"ttotal":300,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 400),  # Warehouse doesnt have enough budget
+    # test rack quantity
+    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":3,"wid":2}, 201),  # Successful case, note: rack had qauntity at 99, and now is 100
+    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":3,"wid":2}, 400),  # rack is too full, note: quantity is 100 and capacity caps at 100, therefore we couldnt add one more part
+    # test stock
+    ({"tquantity":5,"ttotal":500,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 201),  # Successful case, note: stock is now 0
+    ({"tquantity":5,"ttotal":500,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # Not enough stock
+    ({"tquantity":5,"ttotal":500,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  #Succesful case testing another supplier
+    # test entity relationships
+    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":3,"wid":1}, 400),  # User does not work in warehouse
+    ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":1,"wid":1}, 400),  # Rack doesnt exist in warehouse
     ({"tquantity":1,"ttotal":1,"pid":2,"sid":2,"rid":3,"uid":1,"wid":1}, 400),  # Rack doesnt exist in warehouse
 
 ])
