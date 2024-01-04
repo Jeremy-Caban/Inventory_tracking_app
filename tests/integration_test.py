@@ -104,7 +104,7 @@ def test_post_warehouse(client, data, status_code):
 # @pytest.mark.order(1)
 @pytest.mark.parametrize("data, status_code", [
     ({"pid":1, "pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 200),  # Successful case
-    ({"pid":99999, "pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 404),  # Successful case
+    ({"pid":99999, "pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 404),  # Pid doesnt exist
 ])   
 def test_get_part(client, data, status_code):
     response = client.get(base_url+f'part/{data["pid"]}')
@@ -140,6 +140,7 @@ def test_post_rack(client, rack_data, status_code):
 @pytest.mark.parametrize("data, status_code", [
     ({ "fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 1 }, 201),  # Successful case
     ({ "fname": "derp", "lname": "bot", "uemail": "db@upr.edu", "uphone":"1-800-plz-work", "wid": 1 }, 201),  # Successful case
+    ({ "fname": "Chad", "lname": "derp", "uemail": "OS@upr.edu", "uphone":"1-800-ayuda", "wid": 2 }, 201),  # Successful case
     ({ "fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 99 }, 400),  # Invalid wid
     ({ "fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": "1" }, 400),  # Invalid wid
     ({ "fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST"}, 400),  # Missing 'wid'
