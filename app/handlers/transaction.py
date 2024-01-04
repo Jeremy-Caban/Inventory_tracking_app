@@ -28,7 +28,7 @@ class TransactionHandler:
         keys = ['date','amount']
         return dict(zip(keys, rows))
     
-    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity, ttotal):
+    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity, ttotal, obuyer):
         
         if not isinstance(pid, int):
             raise ValueError('pid needs to be a positive number')
@@ -45,6 +45,7 @@ class TransactionHandler:
         if not isinstance(ttotal, int):
             raise ValueError('ttotal needs to be a positive number')
       
+        if tquantity <=0 or ttotal <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
 
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
@@ -84,6 +85,15 @@ class TransactionHandler:
         rack_pid = rack_dao.get_rack_part(rid)[0]
         if rack_pid != pid:
            raise ValueError('Rack does not hold provided part')
+        
+        if not obuyer:
+            raise ValueError('Buyer is not set')
+
+        rack_dao = RackDAO()
+        curr_quantity = rack_dao.get_rack_quantity(rid)
+        if curr_quantity < tquantity:
+            raise ValueError('Unable to complete transaction; Not enough parts in rack')
+
         return True
 
 
@@ -327,18 +337,6 @@ class TransactionHandler:
             self.validate_outgoing(pid, sid, rid, uid, wid, tquantity, ttotal)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
-
-        #if not self.validate_outgoing(pid, sid, rid, uid, wid, tquantity):
-        #    return jsonify(Error = 'Invalid data'), 400
-
-        if obuyer is None:
-            return jsonify(Error = 'Buyer is not set'), 400
-
-        rack_dao = RackDAO()
-        curr_quantity = rack_dao.get_rack_quantity(rid)
-        if curr_quantity < tquantity:
-            return jsonify(Error = 'Unable to complete transaction; \
-                    Not enough parts in rack'), 400
 
         #mutations
         transaction_dao = outgoing_dao = TransactionDAO()
