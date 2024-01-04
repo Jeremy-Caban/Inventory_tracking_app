@@ -208,6 +208,11 @@ how to test transactions
     ({"tquantity":1,"ttotal":100,"pid":1,"sid":99,"rid":2,"uid":3,"wid":2}, 400),  # Invalid supplier
     ({"tquantity":1,"ttotal":100,"pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid Part
     ({"tquantity":1,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Missing ttotaL
+    ({"tquantity":1,"ttotal":100,"pid":2,"sid":2,"rid":2,"uid":3,"wid":"2"}, 400),  # Invalid wid
+    ({"tquantity":1,"ttotal":100,"pid":2,"sid":2,"rid":"2","uid":3,"wid":2}, 400),  # Invalid rid
+    ({"tquantity":1,"ttotal":100,"pid":2,"sid":"2","rid":2,"uid":3,"wid":2}, 400),  # Invalid sid
+    ({"tquantity":1,"ttotal":"100","pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid ttotal
+    ({"tquantity":"1","ttotal":100,"pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid tqauntity
     ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  # Rack doesnt exist in warehouse
 
 ])
