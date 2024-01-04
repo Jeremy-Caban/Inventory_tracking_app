@@ -213,7 +213,7 @@ how to test transactions
     ({"tquantity":1,"ttotal":100,"pid":2,"sid":"2","rid":2,"uid":3,"wid":2}, 400),  # Invalid sid
     ({"tquantity":1,"ttotal":"100","pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid ttotal
     ({"tquantity":"1","ttotal":100,"pid":2,"sid":2,"rid":2,"uid":3,"wid":2}, 400),  # Invalid tqauntity
-    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  # Rack doesnt exist in warehouse
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  # Successful case
 
 ])
 def test_post_transaction(client, data, status_code):
