@@ -334,7 +334,7 @@ class TransactionHandler:
         uid = json.get('uid', None)
         wid = json.get('wid', None)
         try:
-            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity, ttotal)
+            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity, ttotal, obuyer)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
