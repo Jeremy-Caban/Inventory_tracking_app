@@ -28,7 +28,24 @@ class TransactionHandler:
         keys = ['date','amount']
         return dict(zip(keys, rows))
     
-    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity):
+    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity, ttotal):
+        
+        if not isinstance(pid, int):
+            raise ValueError('pid needs to be a positive number')
+        if not isinstance(sid, int):
+            raise ValueError('sid needs to be a positive nsumber')
+        if not isinstance(rid, int):
+            raise ValueError('rid needs to be a positive number')
+        if not isinstance(uid, int):
+            raise ValueError('uid needs to be a positive number')
+        if not isinstance(wid, int):
+            raise ValueError('wid needs to be a positive number')
+        if not isinstance(tquantity, int):
+            raise ValueError('tquantity needs to be a positive number')
+        if not isinstance(ttotal, int):
+            raise ValueError('ttotal needs to be a positive number')
+      
+
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
         rack_dao = RackDAO()
@@ -304,7 +321,7 @@ class TransactionHandler:
         uid = json.get('uid', None)
         wid = json.get('wid', None)
         try:
-            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity)
+            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity, ttotal)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
