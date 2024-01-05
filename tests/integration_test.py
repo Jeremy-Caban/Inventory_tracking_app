@@ -71,6 +71,7 @@ def helper_test_posts(client, endpoint, post_data, expected_status, expected_res
                 #validate data
                 if field in post_data:
                     assert response_data[key][field] == post_data[field]
+        return True
 
 # @pytest.mark.order(0)
 @pytest.mark.parametrize("data, status_code", [
@@ -90,6 +91,7 @@ def test_post_parts(client, data, status_code):
 @pytest.mark.parametrize("data, status_code", [
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":500}, 201),  # Successful case
     ({"wname":"Big Balling Warehouse", "wcity":"San Juan", "wemail":"juan@test", "wphone":"787-1DB-TEST", "budget":100000}, 201),  # Successful case
+    ({"wname":"Big Balling Warehouse", "wcity":"San Juan", "wemail":"juan@test", "wphone":"787-1DB-TEST", "budget":1}, 201),  # Successful case
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "budget":500}, 400),  # missing 'wphone'
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":'500'}, 400),  # Incorrect data type
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":-500}, 400),  # Invalid value
@@ -236,3 +238,29 @@ def test_post_transaction(client, data, status_code):
     assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == budget - pprice*tquant
     assert rack.RackDAO().get_rack_quantity(rid) == rack_quant+tquant
     assert supplier.SupplierDAO().get_supplier_supplies_stock_by_sid_and_pid(sid,pid) == stock - tquant
+
+
+@pytest.mark.parametrize("data, status_code", [
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+])
+def test_post_outgoing_transaction(client, data, status_code):
+    from app.dao import parts, rack, warehouse, supplier
+    pid = data.get('pid',None)
+    wid =  data.get('wid',None)
+    rid =  data.get('rid',None)
+    profit_yield = 1.10
+    
+    pprice = parts.PartsDAO().get_part_price(pid)
+    budget = warehouse.WarehouseDAO().get_warehouse_budget(wid)
+    rack_quant = rack.RackDAO().get_rack_quantity(rid)
+
+    endpoint = base_url + 'outgoing'
+    expected_structure = {"Outgoing": ["outid", "tdate", "tquantity", "ttotal", "uid", "wid", "rid", "pid", "sid", "tid", "obuyer"]}
+    if not helper_test_posts(client, endpoint, data, status_code, expected_structure): 
+        return
+    tquant = data.get('tquantity')
+    print(warehouse.WarehouseDAO().get_warehouse_budget(wid),budget, pprice*tquant*profit_yield )
+    assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == (budget + pprice*tquant*profit_yield)
+    assert rack.RackDAO().get_rack_quantity(rid) == rack_quant-tquant
+    assert rack.RackDAO().get_rack_quantity(rid) >=0
+    
