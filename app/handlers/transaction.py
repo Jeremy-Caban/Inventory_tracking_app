@@ -12,6 +12,7 @@ class TransactionHandler:
     outgoing_keys = ['tid', 'outid','obuyer', 'wid', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     exchange_keys = ['tid', 'tranid','outgoing_wid', 'incoming_wid', 'tdate', 'tquantity','ttotal','pid','sid', 'rid','uid']
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
+    profit_yield = 1.10
 
     def build_attributes_dict(self, attr_array, ttype):
         keys = []
@@ -347,14 +348,14 @@ class TransactionHandler:
 
         #update tables
         warehouse_dao = WarehouseDAO()
-        new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal
+        new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal*self.profit_yield
         wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
 
         new_quantity = RackDAO().get_rack_quantity(rid) - tquantity
         rid = RackDAO().set_rack_quantity(rid, new_quantity)
 
         result = self.build_attributes_dict(attr_array, "outgoing")
-        return jsonify(Outgoing=result)
+        return jsonify(Outgoing=result), 201
 
 
 
@@ -530,7 +531,7 @@ class TransactionHandler:
         outgoing_result = self.build_attributes_dict(outgoing_attr_array, "exchange")
         incoming_result = self.build_attributes_dict(incoming_attr_array, "exchange")
         result = [outgoing_result,incoming_result]
-        return jsonify(exchange=result)
+        return jsonify(exchange=result), 201
     
     #UPDATE-----
     def update_exchange(self, tid, json):
