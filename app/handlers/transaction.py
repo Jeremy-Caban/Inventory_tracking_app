@@ -12,6 +12,7 @@ class TransactionHandler:
     outgoing_keys = ['tid', 'outid','obuyer', 'wid', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     exchange_keys = ['tid', 'tranid','outgoing_wid', 'incoming_wid', 'tdate', 'tquantity','ttotal','pid','sid', 'rid','uid']
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
+    profit_yield = 1.10
 
     def build_attributes_dict(self, attr_array, ttype):
         keys = []
@@ -347,7 +348,7 @@ class TransactionHandler:
 
         #update tables
         warehouse_dao = WarehouseDAO()
-        new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal
+        new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal*self.profit_yield
         wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
 
         new_quantity = RackDAO().get_rack_quantity(rid) - tquantity
