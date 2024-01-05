@@ -354,7 +354,7 @@ class TransactionHandler:
         rid = RackDAO().set_rack_quantity(rid, new_quantity)
 
         result = self.build_attributes_dict(attr_array, "outgoing")
-        return jsonify(Outgoing=result)
+        return jsonify(Outgoing=result), 201
 
 
 
@@ -530,7 +530,7 @@ class TransactionHandler:
         outgoing_result = self.build_attributes_dict(outgoing_attr_array, "exchange")
         incoming_result = self.build_attributes_dict(incoming_attr_array, "exchange")
         result = [outgoing_result,incoming_result]
-        return jsonify(exchange=result)
+        return jsonify(exchange=result), 201
     
     #UPDATE-----
     def update_exchange(self, tid, json):
