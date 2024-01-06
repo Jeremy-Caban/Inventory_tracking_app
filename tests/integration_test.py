@@ -73,6 +73,22 @@ def helper_test_posts(client, endpoint, post_data, expected_status, expected_res
                     assert response_data[key][field] == post_data[field]
         return True
 
+def validate_updates(client, endpoint, update_data, expected_status, expected_response_structure):
+    response = client.put(endpoint,json=update_data)
+    assert response.status_code == expected_status, response.data
+
+    if expected_status == 200:
+        response_data = response.json
+        for key, fields in expected_response_structure.items():
+            #validate response structure
+            assert key in response_data
+            for field in fields:
+                assert field in response_data[key]
+                #validate data
+                if field in update_data:
+                    assert response_data[key][field] == update_data[field]
+        return True
+
 # @pytest.mark.order(0)
 @pytest.mark.parametrize("data, status_code", [
     ({"pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 201),  # Successful case
@@ -273,4 +289,17 @@ def test_post_outgoing_transaction(client, data, status_code):
     assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == (budget + pprice*tquant*profit_yield)
     assert rack.RackDAO().get_rack_quantity(rid) == rack_quant-tquant
     assert rack.RackDAO().get_rack_quantity(rid) >=0
+
+@pytest.mark.parametrize("pid, data, status_code", [
+    # testing parts in rack
+    (1, {"pprice":111, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 200),  # Successful case
+    (1, {"pprice":0, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":-50, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":"50", "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":50, "ptype":"", "pname":"amd cpu ryzen flop"}, 400),  # invalid ptype
+])    
+def test_update_part(client, pid, data, status_code):
+    expected_structure = {"Part": ["pid", "pname", "pprice", "ptype"]}
+    endpoint = base_url+f'part/{pid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
     
