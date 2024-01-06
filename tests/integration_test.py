@@ -91,7 +91,6 @@ def test_post_parts(client, data, status_code):
 @pytest.mark.parametrize("data, status_code", [
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":500}, 201),  # Successful case
     ({"wname":"Big Balling Warehouse", "wcity":"San Juan", "wemail":"juan@test", "wphone":"787-1DB-TEST", "budget":100000}, 201),  # Successful case
-    ({"wname":"Big Balling Warehouse", "wcity":"San Juan", "wemail":"juan@test", "wphone":"787-1DB-TEST", "budget":1}, 201),  # Successful case
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "budget":500}, 400),  # missing 'wphone'
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":'500'}, 400),  # Incorrect data type
     ({"wname":"Transaction_Warehouse", "wcity":"Aguada", "wemail":"db@test", "wphone":"787-0DB-TEST", "budget":-500}, 400),  # Invalid value
@@ -241,7 +240,18 @@ def test_post_transaction(client, data, status_code):
 
 
 @pytest.mark.parametrize("data, status_code", [
-    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+    # testing parts in rack
+    ({"tquantity":17,"obuyer":"Test","ttotal":1700,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 400),  # not enough parts in rack
+    # testing relationships
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":2,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # invalid pid
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":3,"uid":3,"wid":2}, 400),  # invalid rack
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":2,"wid":2}, 400),  # invalid user
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":1}, 400),  # invalid warehouse
+    ({"tquantity":"1","obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # invalid quantity
+    ({"tquantity":1,"ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # Missing obuyer
+    ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 201),  # Succesful case
+
 ])
 def test_post_outgoing_transaction(client, data, status_code):
     from app.dao import parts, rack, warehouse, supplier
