@@ -93,6 +93,7 @@ def validate_updates(client, endpoint, update_data, expected_status, expected_re
 @pytest.mark.parametrize("data, status_code", [
     ({"pprice": 100.0, "ptype": "Steel", "pname": "Bolt"}, 201),  # Successful case
     ({"pprice": 1.0, "ptype": "wood", "pname": "stick"}, 201),  # Successful case
+    ({"pprice": 4.0, "ptype": "memes", "pname": "lolazo"}, 201),  # Successful case
     ({"pprice": 100.0, "pname": "Bolt"}, 400),  # Missing 'ptype'
     ({"pprice": "100.0", "ptype": "Steel", "pname": "Bolt"}, 400),  # Incorrect data type
     ({"pprice": -50.0, "ptype": "Steel", "pname": "Bolt"}, 400),  # Invalid value
@@ -321,11 +322,12 @@ def test_update_supplier(client, sid, data, status_code):
     (2, {"stock":1000, "pid":2}, 200),  # Successful case
     (2, {"stock":0, "pid":1}, 200),  # Successful case
     (2, {"stock":-1, "pid":1}, 400),  # Invalid stock
-    (2, {"stock":"1", "pid":99}, 400),  # Invalid stock
+    (2, {"stock":"1", "pid":99}, 400),  # pid doesnt exist
     (2, {"stock":1, "pid":"99"}, 400),  # Invalid pid
     (2, {"pid":"99"}, 400),  # Missing stock
     (2, {"stock":1, "pid":99}, 400),  # pid doesnt exist
     (99, {"stock":1, "pid":99}, 404),  # sid doesnt exist
+    (1, {"stock":1, "pid":3}, 400),  # supplier 1 doesnt supply pid 3
 ])  
 def test_update_supply(client, sid, data, status_code):
     expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
