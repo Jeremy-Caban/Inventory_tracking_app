@@ -21,7 +21,7 @@ def get_warehouse_by_id(wid):
     if request.method == 'GET':
         return WarehouseHandler().get_warehouse_by_id(wid)
     elif request.method == 'PUT':
-        return WarehouseHandler().update_warehouse(wid, request.form)
+        return WarehouseHandler().update_warehouse(wid, request.json)
     elif request.method == 'DELETE':
         return WarehouseHandler().delete_warehouse(wid)
     else:
