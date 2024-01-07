@@ -331,3 +331,18 @@ def test_update_supply(client, sid, data, status_code):
     expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
     endpoint = base_url+f'supplier/{sid}/parts'
     validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("uid, data, status_code", [
+    # testing parts in rack
+    (1,{"fname": "u Cristian", "lname": "u Seguinot", "uemail": "@test.com", "uphone":"787-updated", "wid": 2}, 200),  # Successful case
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": "1"}, 400),  # invalid wid
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 99}, 400),  # warehouse doesnt exist
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST"}, 400),  # missing wid
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "wid": 2}, 400),  # missing uphones
+    (1,{"fname": "Cristian", "lname": "", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 400),  # invalid lname
+    (9,{"fname": "Cristian", "lname": "bop", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 404),  # user doesnt exist
+])  
+def test_update_user(client, uid, data, status_code):
+    endpoint = base_url+f'user/{uid}'
+    expected_structure = {"User": ["uid", "fname", "lname", "uemail", "uphone", "wid"]}
+    validate_updates(client, endpoint,data,status_code, expected_structure)
