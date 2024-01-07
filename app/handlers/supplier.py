@@ -88,21 +88,22 @@ class SupplierHandler:
         if not dao.get_supplier_by_ID(sid):
             return jsonify(Error='Supplier not found'), 404
         if len(json) != KEYS_LENGTH:
-            return jsonify(Error=f'Malformed data: got {len(json)}')
+            return jsonify(Error=f'Malformed data: got {len(json)}'), 400
         sname = json.get('sname', None)
         scity = json.get('scity', None)
         semail = json.get('semail', None)
         sphone = json.get('sphone', None)
 
-        # Check every info is being sent by json
-        if not isinstance(sname, str) or len(sname) > 100 or not isinstance(scity, str) or len(scity) > 20 or not isinstance(semail, str) or len(semail) > 100 or not (isinstance(sphone, str) and sphone.isdigit() and len(sphone) == 10):
-            return jsonify(Error=f"Incorrect attribute type or length."), 400
+        if not isinstance(sname,str): return jsonify("sname missing or not valid"), 400
+        if not isinstance(scity,str): return jsonify("scity missing or not valid"), 400
+        if not isinstance(semail,str): return jsonify("semail missing or not valid"), 400
+        if not isinstance(sphone,str): return jsonify("sphone missing or not valid"), 400
                            
         if sname and scity and semail and sphone:
             dao.update(sid, scity, sname, sphone, semail)
             result = self.build_supplier_attributes(sid, sname, scity, sphone, semail)
-            return jsonify(Supplier=result), 201
-        return jsonify(Error='Attributes were not set properly')
+            return jsonify(Supplier=result), 200
+        return jsonify(Error='Attributes were not set properly'), 400
 
     # works!
     def delete_supplier(self, sid):
