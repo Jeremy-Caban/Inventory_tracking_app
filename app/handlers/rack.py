@@ -116,44 +116,47 @@ class RackHandler:
 
 
     # Assume that if quantity field is not set, user meant for it to be 0
-    def update_rack(self, rid, form):
+    def update_rack(self, rid, json):
         KEYS_LENGTH = 4
         dao = RackDAO()
         if not dao.get_rack_by_id(rid):
             return jsonify(Error='Rack not found'), 404
 
-        if len(form) != KEYS_LENGTH:
-            return jsonify(Error=f'Malformed data: got {len(form)}')
-        capacity = int(form.get('capacity', 0))
-        wid = form.get('wid', None)
-        quantity = int(form.get('quantity', 0))
-        pid = form.get('pid', None)
+        if len(json) != KEYS_LENGTH:
+            return jsonify(Error=f'Malformed data: got {len(json)}'), 400
+        
+        capacity = json.get('capacity', None)
+        wid = json.get('wid', None)
+        quantity = json.get('quantity', None)
+        pid = json.get('pid', None)
 
-        if wid is None or not WarehouseDAO().get_warehouse_by_id(wid):
-            return jsonify(Error='Provided warehouse ID not found.')
+        if not isinstance(wid, int) or not WarehouseDAO().get_warehouse_by_id(wid):
+            return jsonify(Error='Provided warehouse ID not found.'), 400
 
-        if pid is None:
-            return jsonify(Error='Part ID not provided.')
+        if RackDAO().get_rack_warehouse(rid)[0] != wid:
+            return jsonify(f"Rack does not exist in warehouse id: {wid}"), 400
 
-        if PartsDAO().getPartById(pid) is None:
+        if not isinstance(pid, int):
+            return jsonify(Error='Part ID not provided.'), 400
+
+        if not PartsDAO().getPartById(pid):
             return jsonify(Error='Part does not exist'), 404
+        
+        if RackDAO().get_rack_part(rid)[0] != pid:
+            return jsonify(f"Rack does not hold part id {pid}"), 400
 
-        if capacity <= 0:
+        if not isinstance(capacity, int) or capacity <= 0:
             return jsonify(Error='Rack capacity invalid.'), 400
 
-        if quantity > capacity or quantity < 0:
+        if not isinstance(quantity, int) or quantity > capacity or quantity < 0:
             return jsonify(Error="Rack quantity invalid."), 400
-
-        in_warehouse = dao.update_rack_in_warehouse_validation(pid, wid, rid)
-        if in_warehouse:
-            return jsonify(Error=f"A Rack with part {pid} is already in Warehouse {wid}."), 400
 
         flag = dao.update(rid, capacity, quantity, pid, wid)
         if not flag:
-            return jsonify(Error="Update could not be completed.")
+            return jsonify(Error="Update could not be completed."), 400
 
         result = self.build_rack_attributes(rid, capacity, quantity, pid, wid)
-        return jsonify(Rack=result), 201
+        return jsonify(Rack=result)
 
 
     def delete_rack(self, rid):
