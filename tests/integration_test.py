@@ -233,7 +233,7 @@ how to test transactions
     ({"tquantity":1,"ttotal":100,"pid":1,"sid":2,"rid":2,"uid":3,"wid":2}, 201),  # Successful case
 
 ])
-def test_post_transaction(client, data, status_code):
+def test_post_inncoming_transaction(client, data, status_code):
     from app.dao import parts, rack, warehouse, supplier
     pid = data.get('pid',None)
     wid =  data.get('wid',None)
