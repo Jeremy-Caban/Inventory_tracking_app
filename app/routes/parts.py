@@ -20,7 +20,7 @@ def getPartById(pid):
     if request.method == 'GET':
         return PartHandler().getPartById(pid)
     elif request.method == 'PUT':
-        return PartHandler().update_part(pid, request.form)
+        return PartHandler().update_part(pid, request.json)
     elif request.method == 'DELETE':
         return PartHandler().deletePart(pid)
     else:
