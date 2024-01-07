@@ -302,4 +302,15 @@ def test_update_part(client, pid, data, status_code):
     expected_structure = {"Part": ["pid", "pname", "pprice", "ptype"]}
     endpoint = base_url+f'part/{pid}'
     validate_updates(client, endpoint,data,status_code, expected_structure)
-    
+
+
+@pytest.mark.parametrize("sid, data, status_code", [
+    # testing parts in rack
+    (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 200),  # Successful case
+    (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "", "semail":"db@gmail.com"}, 400),  # sphone is empty
+    (1,{ "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 400),  # Missing sname
+])    
+def test_update_supplier(client, sid, data, status_code):
+    expected_structure = {"Supplier": ["sid", "sname", "scity", "sphone", "semail"]}
+    endpoint = base_url+f'supplier/{sid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
