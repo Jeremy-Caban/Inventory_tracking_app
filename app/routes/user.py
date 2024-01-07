@@ -21,7 +21,7 @@ def getUserById(uid):
     if request.method == 'GET':
         return UserHandler().getUserById(uid)
     elif request.method == 'PUT':
-        return UserHandler().updateUser(uid, request.form)
+        return UserHandler().updateUser(uid, request.json)
     elif request.method == 'DELETE':
         return UserHandler().deleteUser(uid)
     else:
