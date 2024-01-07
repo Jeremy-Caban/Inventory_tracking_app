@@ -314,3 +314,20 @@ def test_update_supplier(client, sid, data, status_code):
     expected_structure = {"Supplier": ["sid", "sname", "scity", "sphone", "semail"]}
     endpoint = base_url+f'supplier/{sid}'
     validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("sid, data, status_code", [
+    # testing parts in rack
+    (1, {"stock":10, "pid":1}, 200),  # Successful case
+    (2, {"stock":1000, "pid":2}, 200),  # Successful case
+    (2, {"stock":0, "pid":1}, 200),  # Successful case
+    (2, {"stock":-1, "pid":1}, 400),  # Invalid stock
+    (2, {"stock":"1", "pid":99}, 400),  # Invalid stock
+    (2, {"stock":1, "pid":"99"}, 400),  # Invalid pid
+    (2, {"pid":"99"}, 400),  # Missing stock
+    (2, {"stock":1, "pid":99}, 400),  # pid doesnt exist
+    (99, {"stock":1, "pid":99}, 404),  # sid doesnt exist
+])  
+def test_update_supply(client, sid, data, status_code):
+    expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
+    endpoint = base_url+f'supplier/{sid}/parts'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
