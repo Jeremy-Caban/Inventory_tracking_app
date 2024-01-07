@@ -346,3 +346,18 @@ def test_update_user(client, uid, data, status_code):
     endpoint = base_url+f'user/{uid}'
     expected_structure = {"User": ["uid", "fname", "lname", "uemail", "uphone", "wid"]}
     validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("wid, data, status_code", [
+    # testing parts in rack
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 200),  # Successful case
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":-2}, 400),  # Invalid budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":"2"}, 400),  # Invalid budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated"}, 400),  # missing budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "budget":0}, 400),  # missing wphone
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"", "wphone":"787-updated", "budget":0}, 400),  # invalid wemail
+    (99,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 404),  # warehouse does not exist
+])  
+def test_update_warehouse(client, wid, data, status_code):
+    expected_structure = {"Warehouse": ["wid", "wname", "wcity", "wemail", "wphone", "budget"]}
+    endpoint = base_url+f'warehouse/{wid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
