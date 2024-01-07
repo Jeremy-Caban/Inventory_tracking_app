@@ -363,3 +363,26 @@ def test_update_warehouse(client, wid, data, status_code):
     expected_structure = {"Warehouse": ["wid", "wname", "wcity", "wemail", "wphone", "budget"]}
     endpoint = base_url+f'warehouse/{wid}'
     validate_updates(client, endpoint,data,status_code, expected_structure)
+    
+@pytest.mark.parametrize("rid, data, status_code", [
+    # testing parts in rack
+    (1,{"capacity": 100, "wid": 1, "quantity": 100, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 10, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 10, "wid": 1, "quantity": 11, "pid": 1}, 400),  # quantity exceeds capacity
+    (1,{"capacity": 10, "wid": 1, "quantity": -1, "pid": 1}, 400),  # invalid quantity
+    (1,{"capacity": 10, "wid": 1, "quantity": "10", "pid": 1}, 400),  # invalid quantity
+    (1,{"capacity": 0, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": -10, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": "10", "wid": 1, "quantity": 10, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 2}, 400),  # warehouse does not have a rack with pid 2
+    (1,{"capacity": 100, "wid": 99, "quantity": 0, "pid": 1}, 400),  # warehouse does not exist
+    (2,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 400),  # rack does not belong to warehouse
+    (99,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 404),  # rack does not exist
+    (1,{"capacity": 100, "wid": "1", "quantity": 0, "pid": 1}, 400),  # Invalid wid
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": "1"}, 400),  # Invalid pid
+])  
+def test_update_rack(client,rid,data,status_code):
+    endpoint = base_url+f'rack/{rid}'
+    expected_structure = {"Rack": ["rid", "capacity", "quantity", "pid", "wid"]}
+    validate_updates(client, endpoint,data,status_code, expected_structure)
