@@ -8,7 +8,7 @@ from app.dao.supplier import SupplierDAO
 
 class TransactionHandler:
     #KEYS
-    incoming_keys = ['tid','icid','wid','tdate','tquantity','ttotal','pid','sid', 'rid','uid']
+    incoming_keys = ['tid','incid', 'sid', 'tdate','tquantity','pid','uid','wid']
     outgoing_keys = ['tid', 'outid','obuyer', 'wid', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     exchange_keys = ['tid', 'tranid','outgoing_wid', 'incoming_wid', 'tdate', 'tquantity','ttotal','pid','sid', 'rid','uid']
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
@@ -98,7 +98,7 @@ class TransactionHandler:
         return True
 
 
-    def validate_incoming(self, pid, sid, rid, uid, wid, tquantity, ttotal):
+    def validate_incoming(self, pid, sid, uid, wid, tquantity):
         """
         Checks entities exist and that the transaction is overall valid.
         """
@@ -106,16 +106,13 @@ class TransactionHandler:
             raise ValueError('pid needs to be a positive number')
         if not isinstance(sid, int):
             raise ValueError('sid needs to be a positive number')
-        if not isinstance(rid, int):
-            raise ValueError('rid needs to be a positive number')
         if not isinstance(uid, int):
             raise ValueError('uid needs to be a positive number')
         if not isinstance(wid, int):
             raise ValueError('wid needs to be a positive number')
         if not isinstance(tquantity, int):
             raise ValueError('tquantity needs to be a positive number')
-        if not isinstance(ttotal, int):
-            raise ValueError('ttotal needs to be a positive number')
+
                  
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
@@ -125,7 +122,8 @@ class TransactionHandler:
 
         part_row = part_dao.getPartById(pid)
         supplier_row = supplier_dao.get_supplier_by_ID(sid)
-        rack_row = rack_dao.get_rack_by_id(rid)
+        # find rack
+        rid = rack_dao.get_rid_from_wid_and_pid(wid,pid)
         user_row = user_dao.getUserById(uid)
         warehouse_row = warehouse_dao.get_warehouse_by_id(wid)
 
@@ -133,14 +131,14 @@ class TransactionHandler:
             raise ValueError('Provided PID invalid')
         if not supplier_row:
             raise ValueError('Provided SID invalid')
-        if not rack_row:
-            raise ValueError('Provided RID invalid')
+        if not rid:
+            raise ValueError(f'No rack with pid:{pid} was found in warehouse {wid}')
         if not user_row:
             raise ValueError('Provided UID invalid')
         if not warehouse_row:
             raise ValueError('Provided WID invalid')
         
-        if tquantity <=0 or ttotal <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
+        if tquantity <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
 
         supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
         if not supid:
@@ -173,8 +171,6 @@ class TransactionHandler:
         if warehouse_budget < total_cost:
            raise ValueError('Warehouse budget is not enough for transaction')
 
-        if total_cost != ttotal:
-           raise ValueError('Calculated total does not match provided total')
         return True
 
 
@@ -214,19 +210,17 @@ class TransactionHandler:
 
     #CREATE-----
     def insert_incoming(self, json):
-        KEYS_LENGTH = 7 #modify to fit all needed attr
+        KEYS_LENGTH = 5 #modify to fit all needed attr
         if len(json) != KEYS_LENGTH:
             return jsonify(Error='Incorrent amount of keys sent in POST'), 400
         pid = json.get('pid')
         sid = json.get('sid')
-        rid = json.get('rid')
         uid = json.get('uid')
         wid = json.get('wid')
         tquantity = json.get('tquantity')
-        ttotal = json.get('ttotal')
 
         try:
-            self.validate_incoming(pid, sid, rid, uid, wid, tquantity, ttotal)
+            self.validate_incoming(pid, sid, uid, wid, tquantity)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
@@ -235,16 +229,16 @@ class TransactionHandler:
         warehouse_dao = WarehouseDAO()
         rack_dao = RackDAO()
         supplier_dao = SupplierDAO()
-
-        tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid,uid)
+        rid = rack_dao.get_rid_from_wid_and_pid(wid,pid)
+        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid)
         
         #create entry in incoming transactions
-        incid = incoming_dao.insert_incoming(wid, tid)
+        incid = incoming_dao.insert_incoming(sid, tid)
         tdate = incoming_dao.get_transaction_date(tid)
-        attr_array = [tid, incid, wid, tdate, tquantity, ttotal, pid, sid, rid, uid]
+        attr_array = [tid, incid, sid, tdate, tquantity, pid, uid, wid]
 
         warehouse_budget = warehouse_dao.get_warehouse_budget(wid)
-        new_budget = warehouse_budget - ttotal
+        new_budget = warehouse_budget - PartsDAO().get_part_price(pid)*tquantity
 
         wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
 

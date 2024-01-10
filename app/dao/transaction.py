@@ -113,17 +113,25 @@ class TransactionDAO:
         cursor.close()
         return result
     
-    def insert_transaction(self, tquantity, ttotal, pid, sid, rid, uid):
+    def insert_transaction(self, tquantity, pid, wid, uid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_transaction"], (tquantity, ttotal, pid, sid, rid, uid))
+        query = '''insert into transaction(tdate, tquantity, pid, wid, uid)
+                                values(now(), %s, %s, %s, %s) returning tid;
+                            '''
+        cursor.execute(query, (tquantity, pid, wid, uid))
         tid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return tid
 
-    def update_transaction(self, tquantity, ttotal, pid, sid, rid, uid, tid):
+    def update_transaction(self, tquantity, wid, pid, rid, uid, tid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["update_transaction"], (tquantity, ttotal, pid, sid, rid, uid, tid))
+        query = '''
+                update transaction set tdate = now(), tquantity = %s, wid = %s, pid = %s,
+                uid = %s
+                where tid = %s;
+                ''',
+        cursor.execute(query, (tquantity, wid, pid, uid, tid))
         self.conn.commit()
         cursor.close()
         return tid
@@ -152,7 +160,8 @@ class TransactionDAO:
     
     def get_incoming_by_id(self, incid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_incoming_by_id"], (incid,))
+        query = "select * from incomingt natural inner join transaction where incid = %s;"
+        cursor.execute(query, (incid,))
         result = [row for row in cursor]
         cursor.close()
         return result
@@ -163,25 +172,39 @@ class TransactionDAO:
         cursor.close()
         return tid
 
-    def insert_incoming(self, wid, tid): #modify attributes
+    def insert_incoming(self, sid, tid): #modify attributes
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_incoming"], (wid, tid))
+        query = '''
+                insert into incomingt(sid, tid)
+                values (%s, %s) returning incid;
+                '''
+        cursor.execute(query, (sid, tid))
         incid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return incid
     
-    def update_incoming(self, wid, incid):
+    def update_incoming(self, sid, incid):
         cursor = self.conn.cursor()
-        query = "update incomingt set wid= %s where incid = %s;"
-        cursor.execute(query, (wid, incid))
+        query = "update incomingt set sid= %s where incid = %s;"
+        cursor.execute(query, (sid, incid))
         self.conn.commit()
         cursor.close()
         return incid
-       
+
+    #isnt going to work since ttotal got deprecated   
     def get_warehouse_least_cost(self, wid, amount):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_least_cost"], (wid, amount))
+        query = '''
+                select tdate, sum(ttotal)
+                from warehouse natural inner join incomingt
+                    natural inner join transaction
+                where wid = %s
+                group by tdate
+                order by sum(ttotal)
+                limit %s
+                '''
+        cursor.execute(query, (wid, amount))
         result = [row for row in cursor]
         cursor.close()
         return result
@@ -236,9 +259,13 @@ class TransactionDAO:
         cursor.close()
         return tid
 
-    def insert_outgoing(self, obuyer, wid, tid):
+    def insert_outgoing(self, obuyer, tid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_outgoing"], (obuyer,wid, tid))
+        query = '''
+                insert into outgoingt(obuyer, tid)
+                values (%s, %s) returning outid;
+                '''
+        cursor.execute(query, (obuyer, tid))
         outid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
