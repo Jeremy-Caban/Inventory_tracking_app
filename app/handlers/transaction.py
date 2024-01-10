@@ -9,9 +9,8 @@ from app.dao.supplier import SupplierDAO
 class TransactionHandler:
     #KEYS
     incoming_keys = ['tid','incid', 'sid', 'tdate','tquantity','pid','uid','wid']
-    outgoing_keys = ['tid', 'outid','obuyer', 'tdate', 'tquantity','pid','uid', 'wid']
-    exchange_keys = ['tid', 'tranid','outgoing_wid', 'incoming_wid', 'tdate', 'tquantity','ttotal','pid','sid', 'rid','uid']
-    transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
+    outgoing_keys = ['tid', 'outid','obuyer', 'tdate', 'tquantity','pid','uid','wid']
+    exchange_keys = ['tid', 'tranid','taction', 'tdate', 'tquantity','pid','uid','wid']
     profit_yield = 1.10
 
     def build_attributes_dict(self, attr_array, ttype):
@@ -41,7 +40,7 @@ class TransactionHandler:
             raise ValueError('tquantity needs to be a positive number')
 
       
-        if tquantity <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
+        if tquantity <=0: raise ValueError('tquantity shouldnt be less than zero')
 
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
@@ -119,7 +118,7 @@ class TransactionHandler:
         if not warehouse_row:
             raise ValueError('Provided WID invalid')
         
-        if tquantity <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
+        if tquantity <=0: raise ValueError('tquantity shouldnt be less than zero')
 
         supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
         if not supid:
@@ -439,73 +438,53 @@ class TransactionHandler:
 
 
     def insert_exchange(self, json):
-        if len(json)!=10: return jsonify(Error = 'Malformed json'), 400
+        if len(json)!=6: return jsonify(Error = 'Malformed json'), 400
         tquantity = json.get('tquantity', None)
-        ttotal = json.get('ttotal', None)
         pid = json.get('pid', None)
-        sid = json.get('sid', None)
-        outgoing_rid = json.get('outgoing_rid', None)
-        incoming_rid = json.get('incoming_rid', None)
-        outgoing_uid = json.get('outgoing_uid', None)
-        incoming_uid = json.get('incoming_uid', None)
-        outgoing_wid = json.get('outgoing_wid', None)
-        incoming_wid = json.get('incoming_wid', None)
+        sending_wid = json.get('sending_wid', None)
+        receiving_wid = json.get('receiving_wid', None)
+        sending_uid = json.get('sending_uid', None)
+        receiving_uid = json.get('receiving_uid', None)
 
-        if tquantity <=0 or ttotal <=0: return jsonify(Error = 'tquantity and ttotal shouldnt be less than zero'), 400
-
-        outgoing_arr_val = TransactionDAO().is_exchange_outgoing_valid(tquantity,outgoing_uid,outgoing_wid,outgoing_rid,pid,sid)
-        incoming_arr_val = TransactionDAO().is_exchange_incoming_valid(tquantity,incoming_uid,incoming_wid,incoming_rid,pid,sid)
+        if not isinstance(tquantity, int) or tquantity <=0: return jsonify(Error = 'tquantity should be present as a positive int'), 400
+        if sending_wid==receiving_wid: return jsonify('same warehouse transfers are not allowed'), 400
+        tdao = TransactionDAO()
+        rdao = RackDAO()
+        outgoing_arr_val = tdao.is_exchange_sending_valid(tquantity,sending_uid, sending_wid, pid)
+        incoming_arr_val = tdao.is_exchange_receiving_valid(tquantity, receiving_uid, receiving_wid, pid)
 
         if not outgoing_arr_val: return jsonify(Error = 'invalid outgoing entities'), 400
         elif not outgoing_arr_val[0][0]: return jsonify(Error = 'not enough part quantity inside outgoing rack'), 400
 
         if not incoming_arr_val: return jsonify(Error = 'invalid incoming entities'), 400
-        elif not incoming_arr_val[0][0]: return jsonify(Error = 'not enough budget/capacity'), 400
+        elif not incoming_arr_val[0][0]: return jsonify(Error = 'not enough capacity'), 400
 
-        pprice = PartsDAO().get_part_price(pid)
-        if tquantity*pprice != ttotal: return jsonify(Error = 'Calculated total does not match provided total'), 400
+        sending_rid = rdao.get_rid_from_wid_and_pid(sending_wid,pid)
+        receiving_rid = rdao.get_rid_from_wid_and_pid(receiving_wid,pid)
+        receiving_rack_quant = rdao.get_rack_quantity(receiving_rid)
+        sending_rack_quant = rdao.get_rack_quantity(sending_rid)
 
-        # try:
-        #     self.validate_exchange(tquantity,ttotal,pid,sid, outgoing_rid, incoming_rid, outgoing_uid, incoming_uid, outgoing_wid, incoming_wid)
-        # except ValueError as e:
-        #     return jsonify(Error = e.args[0]), 400
+        sending_new_quantity = sending_rack_quant - tquantity
+        rdao.set_rack_quantity(sending_rid, sending_new_quantity)
 
-        rack_dao = RackDAO()
-        curr_quantity = rack_dao.get_rack_quantity(outgoing_rid)
-        if curr_quantity < tquantity:
-            return jsonify(Error = 'Unable to complete transaction; \
-                    Not enough parts in rack'), 400
+        receiving_new_quantity = receiving_rack_quant + tquantity
+        rdao.set_rack_quantity(receiving_rid, receiving_new_quantity)
 
-        dao = TransactionDAO()
-        warehouse_dao = WarehouseDAO()
-        supplier_dao = SupplierDAO()
+        sending_tid = tdao.insert_transaction(tquantity, pid, sending_wid, sending_uid)
+        sending_tranid = tdao.insert_exchange("sending", sending_tid)
+        sending_tdate = tdao.get_transaction_date(sending_tid)
 
-        outgoing_new_budget = warehouse_dao.get_warehouse_budget(outgoing_wid) + ttotal
-        warehouse_dao.set_warehouse_budget(outgoing_wid, outgoing_new_budget)
+        receiving_tid = tdao.insert_transaction(tquantity, pid, receiving_wid, receiving_uid)
+        receiving_tranid = tdao.insert_exchange('receiving', receiving_tid)
+        receiving_tdate = tdao.get_transaction_date(receiving_tid)
+        
+        sending_attr_array = [sending_tid,sending_tranid, "sending", sending_tdate, tquantity, pid, sending_uid, sending_wid]
+        receiving_attr_array = [receiving_tid,receiving_tranid, 'receiving', receiving_tdate, tquantity, pid, receiving_uid, receiving_wid]
 
-        outgoing_new_quantity = curr_quantity - tquantity
-        rack_dao.set_rack_quantity(outgoing_rid, outgoing_new_quantity)
-
-        outgoing_tid = dao.insert_transaction(tquantity, ttotal, pid, sid, outgoing_rid, outgoing_uid)
-        outgoing_tranid = dao.insert_exchange(outgoing_wid, incoming_wid, outgoing_tid)
-        outgoing_tdate = dao.get_transaction_date(outgoing_tid)
-        outgoing_attr_array = [outgoing_tid,outgoing_tranid, outgoing_wid, incoming_wid, outgoing_tdate, tquantity, ttotal, pid, sid, outgoing_rid, outgoing_uid]
-
-        incoming_warehouse_budget = warehouse_dao.get_warehouse_budget(incoming_wid)
-        incoming_new_budget = incoming_warehouse_budget - ttotal
-        warehouse_dao.set_warehouse_budget(incoming_wid, incoming_new_budget)
-
-        incoming_new_quantity = rack_dao.get_rack_quantity(incoming_rid) + tquantity
-        rack_dao.set_rack_quantity(incoming_rid, incoming_new_quantity)
-
-        incoming_tid = dao.insert_transaction(tquantity, ttotal, pid, sid, incoming_rid, incoming_uid)
-        incoming_tranid = dao.insert_exchange(outgoing_wid, incoming_wid, incoming_tid)
-        incoming_tdate = dao.get_transaction_date(incoming_tid)
-        incoming_attr_array = [incoming_tid,incoming_tranid, outgoing_wid, incoming_wid, incoming_tdate, tquantity, ttotal, pid, sid, incoming_rid, incoming_uid]
-
-        outgoing_result = self.build_attributes_dict(outgoing_attr_array, "exchange")
-        incoming_result = self.build_attributes_dict(incoming_attr_array, "exchange")
-        result = [outgoing_result,incoming_result]
+        sending_result = self.build_attributes_dict(sending_attr_array, "exchange")
+        receiving_result = self.build_attributes_dict(receiving_attr_array, "exchange")
+   
+        result = [sending_result,receiving_result]
         return jsonify(exchange=result), 201
     
     #UPDATE-----

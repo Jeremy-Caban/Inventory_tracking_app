@@ -305,16 +305,16 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         query = "select tid from transfert where tranid = %s;"
         cursor.execute(query, (tranid,))
-        tid = cursor.fetchone()[0]
+        tid = cursor.fetchone()
         cursor.close()
-        return tid
+        return tid[0] if tid else tid
 
-    def insert_exchange(self, outgoing_wid, incoming_wid, tid):
+    def insert_exchange(self, taction, tid):
         cursor = self.conn.cursor()
-        query = ''' insert into transfert(outgoing_wid, incoming_wid, tid)
-                            values (%s, %s, %s) returning tranid;
+        query = ''' insert into transfert(taction, tid)
+                            values (%s, %s) returning tranid;
 '''
-        cursor.execute(query, (outgoing_wid,incoming_wid, tid))
+        cursor.execute(query, (taction, tid))
         tranid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
@@ -333,27 +333,27 @@ class TransactionDAO:
 
 
 
-    def is_exchange_incoming_valid(self,tquant, uid, wid, rid, pid, sid):
+    def is_exchange_receiving_valid(self,tquant, uid, wid, pid):
         cursor = self.conn.cursor()
         query = '''
-        select (budget-pprice*%s >= 0 and quantity + %s <= capacity) as valid
-        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
-        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        select (quantity + %s <= capacity) as valid
+        from warehouse natural inner join rack natural inner join parts natural inner join "user"
+        where uid =%s and wid = %s and pid = %s;       
         '''
-        cursor.execute(query, (tquant, tquant, uid, wid, rid, pid, sid))
+        cursor.execute(query, (tquant, uid, wid, pid))
         result = [row for row in cursor]
         cursor.close()
         return result
     
     
-    def is_exchange_outgoing_valid(self,tquant, uid, wid, rid, pid, sid):
+    def is_exchange_sending_valid(self,tquant, uid, wid, pid):
         cursor = self.conn.cursor()
         query = '''
         select (rack.quantity - %s >=0) as valid
-        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
-        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        from warehouse natural inner join rack natural inner join parts natural inner join "user"
+        where uid =%s and wid = %s and pid = %s;      
         '''
-        cursor.execute(query, (tquant, uid, wid, rid, pid, sid))
+        cursor.execute(query, (tquant, uid, wid, pid))
         result = [row for row in cursor]
         cursor.close()
         return result
