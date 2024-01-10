@@ -17,7 +17,7 @@ def get_rack_by_id(rid):
     if request.method == 'GET':
         return RackHandler().get_rack_by_id(rid)
     elif request.method == 'PUT':
-        return RackHandler().update_rack(rid, request.form)
+        return RackHandler().update_rack(rid, request.json)
     elif request.method == 'DELETE':
         return RackHandler().delete_rack(rid)
     else:
