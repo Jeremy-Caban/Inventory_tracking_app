@@ -131,6 +131,16 @@ class RackDAO:
         return result
 
 
+    def get_rid_from_wid_and_pid(self, wid, pid):
+        cursor = self.conn.cursor()
+        query = '''
+            select rid from rack where wid=%s and pid=%s;
+        '''
+        cursor.execute(query, (wid, pid))
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result else result
+
     #queries needed for validation
     def get_rack_warehouse(self, rid):
         cursor = self.conn.cursor()
@@ -168,9 +178,9 @@ class RackDAO:
             select quantity from rack as r where r.rid = %s;
         '''
         cursor.execute(query, (rid,))
-        quantity = cursor.fetchone()[0]
+        quantity = cursor.fetchone()
         cursor.close()
-        return quantity
+        return quantity[0] if quantity else quantity
 
     def set_rack_quantity(self, rid, new_quantity):
         cursor = self.conn.cursor()
