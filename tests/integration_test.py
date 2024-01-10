@@ -256,133 +256,139 @@ def test_post_inncoming_transaction(client, data, status_code):
     assert supplier.SupplierDAO().get_supplier_supplies_stock_by_sid_and_pid(sid,pid) == stock - tquant
 
 
-# @pytest.mark.parametrize("data, status_code", [
-#     # testing parts in rack
-#     ({"tquantity":17,"obuyer":"Test","ttotal":1700,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 201),  # Successful case
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":1,"uid":1,"wid":1}, 400),  # not enough parts in rack
-#     # testing relationships
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":2,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # invalid pid
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":3,"uid":3,"wid":2}, 400),  # invalid rack
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":2,"wid":2}, 400),  # invalid user
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":1}, 400),  # invalid warehouse
-#     ({"tquantity":"1","obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # invalid quantity
-#     ({"tquantity":1,"ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 400),  # Missing obuyer
-#     ({"tquantity":1,"obuyer":"Test","ttotal":100,"pid":1,"sid":1,"rid":2,"uid":3,"wid":2}, 201),  # Succesful case
+@pytest.mark.parametrize("data, status_code", [
+    # testing parts in rack
+    ({"tquantity":17,"obuyer":"Test","pid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":1,"obuyer":"Test","pid":1,"uid":1,"wid":1}, 400),  # not enough parts in rack
+    # testing relationships
+    ({"tquantity":1,"obuyer":"Test","pid":2,"uid":1,"wid":1}, 400),  # warehouse does not have a rack with pid 2
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":2,"wid":2}, 400),  # invalid user/warehouse
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":3,"wid":1}, 400),  # invalid warehouse/warehouse
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":1,"wid":1}, 201),  # Succesful case
+    ({"tquantity":1,"obuyer":"Test","pid":"3","uid":1,"wid":1}, 400),  # Invalid pid 
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":"1","wid":1}, 400),  # Invalid uid 
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":99,"wid":1}, 400),  # uid doesnt exist 
+    ({"tquantity":1,"obuyer":"Test","pid":3,"uid":1,"wid":99}, 400),  # wid doesnt exist 
+    ({"tquantity":1,"obuyer":"Test","pid":99,"uid":1,"wid":1}, 400),  # pid doesnt exist 
+    ({"tquantity":-1,"obuyer":"Test","pid":3,"uid":1,"wid":1}, 400),  # Invalid quantity 
+    ({"tquantity":"1","obuyer":"Test","pid":1,"uid":3,"wid":2}, 400),  # invalid quantity
+    ({"tquantity":1,"pid":1,"uid":3,"wid":2}, 400),  # Missing obuyer
+    ({"tquantity":1,"obuyer":"Test","pid":1,"uid":3,"wid":2}, 201),  # Succesful case
 
-# ])
-# def test_post_outgoing_transaction(client, data, status_code):
-#     from app.dao import parts, rack, warehouse, supplier
-#     pid = data.get('pid',None)
-#     wid =  data.get('wid',None)
-#     rid =  data.get('rid',None)
-#     profit_yield = 1.10
+])
+def test_post_outgoing_transaction(client, data, status_code):
+    from app.dao import parts, rack, warehouse, supplier
+    pid = data.get('pid',None)
+    wid = data.get('wid',None)
+    rid = rack.RackDAO().get_rid_from_wid_and_pid(wid,pid)
+    profit_yield = 1.10
     
-#     pprice = parts.PartsDAO().get_part_price(pid)
-#     budget = warehouse.WarehouseDAO().get_warehouse_budget(wid)
-#     rack_quant = rack.RackDAO().get_rack_quantity(rid)
+    pprice = parts.PartsDAO().get_part_price(pid)
+    budget = warehouse.WarehouseDAO().get_warehouse_budget(wid)
+    rack_quant = rack.RackDAO().get_rack_quantity(rid)
 
-#     endpoint = base_url + 'outgoing'
-#     expected_structure = {"Outgoing": ["outid", "tdate", "tquantity", "ttotal", "uid", "wid", "rid", "pid", "sid", "tid", "obuyer"]}
-#     if not helper_test_posts(client, endpoint, data, status_code, expected_structure): 
-#         return
-#     tquant = data.get('tquantity')
-#     print(warehouse.WarehouseDAO().get_warehouse_budget(wid),budget, pprice*tquant*profit_yield )
-#     assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == (budget + pprice*tquant*profit_yield)
-#     assert rack.RackDAO().get_rack_quantity(rid) == rack_quant-tquant
-#     assert rack.RackDAO().get_rack_quantity(rid) >=0
-
-# @pytest.mark.parametrize("pid, data, status_code", [
-#     # testing parts in rack
-#     (1, {"pprice":111, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 200),  # Successful case
-#     (1, {"pprice":0, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
-#     (1, {"pprice":-50, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
-#     (1, {"pprice":"50", "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
-#     (1, {"pprice":50, "ptype":"", "pname":"amd cpu ryzen flop"}, 400),  # invalid ptype
-# ])    
-# def test_update_part(client, pid, data, status_code):
-#     expected_structure = {"Part": ["pid", "pname", "pprice", "ptype"]}
-#     endpoint = base_url+f'part/{pid}'
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
-
-
-# @pytest.mark.parametrize("sid, data, status_code", [
-#     # testing parts in rack
-#     (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 200),  # Successful case
-#     (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "", "semail":"db@gmail.com"}, 400),  # sphone is empty
-#     (1,{ "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 400),  # Missing sname
-# ])    
-# def test_update_supplier(client, sid, data, status_code):
-#     expected_structure = {"Supplier": ["sid", "sname", "scity", "sphone", "semail"]}
-#     endpoint = base_url+f'supplier/{sid}'
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
-
-# @pytest.mark.parametrize("sid, data, status_code", [
-#     # testing parts in rack
-#     (1, {"stock":10, "pid":1}, 200),  # Successful case
-#     (2, {"stock":1000, "pid":2}, 200),  # Successful case
-#     (2, {"stock":0, "pid":1}, 200),  # Successful case
-#     (2, {"stock":-1, "pid":1}, 400),  # Invalid stock
-#     (2, {"stock":"1", "pid":99}, 400),  # pid doesnt exist
-#     (2, {"stock":1, "pid":"99"}, 400),  # Invalid pid
-#     (2, {"pid":"99"}, 400),  # Missing stock
-#     (2, {"stock":1, "pid":99}, 400),  # pid doesnt exist
-#     (99, {"stock":1, "pid":99}, 404),  # sid doesnt exist
-#     (1, {"stock":1, "pid":3}, 400),  # supplier 1 doesnt supply pid 3
-# ])  
-# def test_update_supply(client, sid, data, status_code):
-#     expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
-#     endpoint = base_url+f'supplier/{sid}/parts'
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
-
-# @pytest.mark.parametrize("uid, data, status_code", [
-#     # testing parts in rack
-#     (1,{"fname": "u Cristian", "lname": "u Seguinot", "uemail": "@test.com", "uphone":"787-updated", "wid": 2}, 200),  # Successful case
-#     (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": "1"}, 400),  # invalid wid
-#     (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 99}, 400),  # warehouse doesnt exist
-#     (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST"}, 400),  # missing wid
-#     (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "wid": 2}, 400),  # missing uphones
-#     (1,{"fname": "Cristian", "lname": "", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 400),  # invalid lname
-#     (9,{"fname": "Cristian", "lname": "bop", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 404),  # user doesnt exist
-# ])  
-# def test_update_user(client, uid, data, status_code):
-#     endpoint = base_url+f'user/{uid}'
-#     expected_structure = {"User": ["uid", "fname", "lname", "uemail", "uphone", "wid"]}
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
-
-# @pytest.mark.parametrize("wid, data, status_code", [
-#     # testing parts in rack
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 200),  # Successful case
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":-2}, 400),  # Invalid budget
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":"2"}, 400),  # Invalid budget
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated"}, 400),  # missing budget
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "budget":0}, 400),  # missing wphone
-#     (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"", "wphone":"787-updated", "budget":0}, 400),  # invalid wemail
-#     (99,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 404),  # warehouse does not exist
-# ])  
-# def test_update_warehouse(client, wid, data, status_code):
-#     expected_structure = {"Warehouse": ["wid", "wname", "wcity", "wemail", "wphone", "budget"]}
-#     endpoint = base_url+f'warehouse/{wid}'
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
+    endpoint = base_url + 'outgoing'
+    expected_structure = {"Outgoing": ["outid", "tdate", "tquantity", "uid", "wid", "pid", "tid", "obuyer"]}
+    if not helper_test_posts(client, endpoint, data, status_code, expected_structure): 
+        return
+    tquant = data.get('tquantity')
     
-# @pytest.mark.parametrize("rid, data, status_code", [
-#     # testing parts in rack
-#     (1,{"capacity": 100, "wid": 1, "quantity": 100, "pid": 1}, 200),  # Successful case
-#     (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
-#     (1,{"capacity": 10, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
-#     (1,{"capacity": 10, "wid": 1, "quantity": 11, "pid": 1}, 400),  # quantity exceeds capacity
-#     (1,{"capacity": 10, "wid": 1, "quantity": -1, "pid": 1}, 400),  # invalid quantity
-#     (1,{"capacity": 10, "wid": 1, "quantity": "10", "pid": 1}, 400),  # invalid quantity
-#     (1,{"capacity": 0, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
-#     (1,{"capacity": -10, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
-#     (1,{"capacity": "10", "wid": 1, "quantity": 10, "pid": 1}, 400),  # invalid capacity
-#     (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 2}, 400),  # warehouse does not have a rack with pid 2
-#     (1,{"capacity": 100, "wid": 99, "quantity": 0, "pid": 1}, 400),  # warehouse does not exist
-#     (2,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 400),  # rack does not belong to warehouse
-#     (99,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 404),  # rack does not exist
-#     (1,{"capacity": 100, "wid": "1", "quantity": 0, "pid": 1}, 400),  # Invalid wid
-#     (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": "1"}, 400),  # Invalid pid
-# ])  
-# def test_update_rack(client,rid,data,status_code):
-#     endpoint = base_url+f'rack/{rid}'
-#     expected_structure = {"Rack": ["rid", "capacity", "quantity", "pid", "wid"]}
-#     validate_updates(client, endpoint,data,status_code, expected_structure)
+    assert warehouse.WarehouseDAO().get_warehouse_budget(wid) == (budget + pprice*tquant*profit_yield)
+    assert rack.RackDAO().get_rack_quantity(rid) == rack_quant-tquant
+    assert rack.RackDAO().get_rack_quantity(rid) >=0
+
+@pytest.mark.parametrize("pid, data, status_code", [
+    # testing parts in rack
+    (1, {"pprice":111, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 200),  # Successful case
+    (1, {"pprice":0, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":-50, "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":"50", "ptype":"semi-conductor", "pname":"amd cpu ryzen flop"}, 400),  # Invalid pprice
+    (1, {"pprice":50, "ptype":"", "pname":"amd cpu ryzen flop"}, 400),  # invalid ptype
+])    
+def test_update_part(client, pid, data, status_code):
+    expected_structure = {"Part": ["pid", "pname", "pprice", "ptype"]}
+    endpoint = base_url+f'part/{pid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
+
+
+@pytest.mark.parametrize("sid, data, status_code", [
+    # testing parts in rack
+    (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 200),  # Successful case
+    (1,{"sname": "Sebastian-EDITED-AGAIN", "scity": "Moca-EDITED", "sphone": "", "semail":"db@gmail.com"}, 400),  # sphone is empty
+    (1,{ "scity": "Moca-EDITED", "sphone": "787-0DB-TEST-EDITED", "semail":"db@gmail.com"}, 400),  # Missing sname
+])    
+def test_update_supplier(client, sid, data, status_code):
+    expected_structure = {"Supplier": ["sid", "sname", "scity", "sphone", "semail"]}
+    endpoint = base_url+f'supplier/{sid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("sid, data, status_code", [
+    # testing parts in rack
+    (1, {"stock":10, "pid":1}, 200),  # Successful case
+    (2, {"stock":1000, "pid":2}, 200),  # Successful case
+    (2, {"stock":0, "pid":1}, 200),  # Successful case
+    (2, {"stock":-1, "pid":1}, 400),  # Invalid stock
+    (2, {"stock":"1", "pid":99}, 400),  # pid doesnt exist
+    (2, {"stock":1, "pid":"99"}, 400),  # Invalid pid
+    (2, {"pid":"99"}, 400),  # Missing stock
+    (2, {"stock":1, "pid":99}, 400),  # pid doesnt exist
+    (99, {"stock":1, "pid":99}, 404),  # sid doesnt exist
+    (1, {"stock":1, "pid":3}, 400),  # supplier 1 doesnt supply pid 3
+])  
+def test_update_supply(client, sid, data, status_code):
+    expected_structure = {"Supplies": ["supid", "pid", "sid", "stock"]}
+    endpoint = base_url+f'supplier/{sid}/parts'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("uid, data, status_code", [
+    # testing parts in rack
+    (1,{"fname": "u Cristian", "lname": "u Seguinot", "uemail": "@test.com", "uphone":"787-updated", "wid": 2}, 200),  # Successful case
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": "1"}, 400),  # invalid wid
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 99}, 400),  # warehouse doesnt exist
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "uphone":"787-0DB-TEST"}, 400),  # missing wid
+    (1,{"fname": "Cristian", "lname": "Seguinot", "uemail": "db@test", "wid": 2}, 400),  # missing uphones
+    (1,{"fname": "Cristian", "lname": "", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 400),  # invalid lname
+    (9,{"fname": "Cristian", "lname": "bop", "uemail": "db@test", "uphone":"787-0DB-TEST", "wid": 2}, 404),  # user doesnt exist
+])  
+def test_update_user(client, uid, data, status_code):
+    endpoint = base_url+f'user/{uid}'
+    expected_structure = {"User": ["uid", "fname", "lname", "uemail", "uphone", "wid"]}
+    validate_updates(client, endpoint,data,status_code, expected_structure)
+
+@pytest.mark.parametrize("wid, data, status_code", [
+    # testing parts in rack
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 200),  # Successful case
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":-2}, 400),  # Invalid budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":"2"}, 400),  # Invalid budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated"}, 400),  # missing budget
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "budget":0}, 400),  # missing wphone
+    (1,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"", "wphone":"787-updated", "budget":0}, 400),  # invalid wemail
+    (99,{"wname":"updated_Warehouse", "wcity":"updated Aguada", "wemail":"db@update-test", "wphone":"787-updated", "budget":0}, 404),  # warehouse does not exist
+])  
+def test_update_warehouse(client, wid, data, status_code):
+    expected_structure = {"Warehouse": ["wid", "wname", "wcity", "wemail", "wphone", "budget"]}
+    endpoint = base_url+f'warehouse/{wid}'
+    validate_updates(client, endpoint,data,status_code, expected_structure)
+    
+@pytest.mark.parametrize("rid, data, status_code", [
+    # testing parts in rack
+    (1,{"capacity": 100, "wid": 1, "quantity": 100, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 10, "wid": 1, "quantity": 0, "pid": 1}, 200),  # Successful case
+    (1,{"capacity": 10, "wid": 1, "quantity": 11, "pid": 1}, 400),  # quantity exceeds capacity
+    (1,{"capacity": 10, "wid": 1, "quantity": -1, "pid": 1}, 400),  # invalid quantity
+    (1,{"capacity": 10, "wid": 1, "quantity": "10", "pid": 1}, 400),  # invalid quantity
+    (1,{"capacity": 0, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": -10, "wid": 1, "quantity": 0, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": "10", "wid": 1, "quantity": 10, "pid": 1}, 400),  # invalid capacity
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 2}, 400),  # warehouse does not have a rack with pid 2
+    (1,{"capacity": 100, "wid": 99, "quantity": 0, "pid": 1}, 400),  # warehouse does not exist
+    (2,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 400),  # rack does not belong to warehouse
+    (99,{"capacity": 100, "wid": 1, "quantity": 0, "pid": 1}, 404),  # rack does not exist
+    (1,{"capacity": 100, "wid": "1", "quantity": 0, "pid": 1}, 400),  # Invalid wid
+    (1,{"capacity": 100, "wid": 1, "quantity": 0, "pid": "1"}, 400),  # Invalid pid
+])  
+def test_update_rack(client,rid,data,status_code):
+    endpoint = base_url+f'rack/{rid}'
+    expected_structure = {"Rack": ["rid", "capacity", "quantity", "pid", "wid"]}
+    validate_updates(client, endpoint,data,status_code, expected_structure)

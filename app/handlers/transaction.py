@@ -9,7 +9,7 @@ from app.dao.supplier import SupplierDAO
 class TransactionHandler:
     #KEYS
     incoming_keys = ['tid','incid', 'sid', 'tdate','tquantity','pid','uid','wid']
-    outgoing_keys = ['tid', 'outid','obuyer', 'wid', 'tdate','tquantity','ttotal','pid','sid', 'rid','uid']
+    outgoing_keys = ['tid', 'outid','obuyer', 'tdate', 'tquantity','pid','uid', 'wid']
     exchange_keys = ['tid', 'tranid','outgoing_wid', 'incoming_wid', 'tdate', 'tquantity','ttotal','pid','sid', 'rid','uid']
     transaction_keys = ['tdate','tquantity','ttotal','pid','sid', 'rid','uid']
     profit_yield = 1.10
@@ -29,24 +29,19 @@ class TransactionHandler:
         keys = ['date','amount']
         return dict(zip(keys, rows))
     
-    def validate_outgoing(self, pid, sid, rid, uid, wid, tquantity, ttotal, obuyer):
+    def validate_outgoing(self, pid, uid, wid, tquantity, obuyer):
         
         if not isinstance(pid, int):
             raise ValueError('pid needs to be a positive number')
-        if not isinstance(sid, int):
-            raise ValueError('sid needs to be a positive nsumber')
-        if not isinstance(rid, int):
-            raise ValueError('rid needs to be a positive number')
         if not isinstance(uid, int):
             raise ValueError('uid needs to be a positive number')
         if not isinstance(wid, int):
             raise ValueError('wid needs to be a positive number')
         if not isinstance(tquantity, int):
             raise ValueError('tquantity needs to be a positive number')
-        if not isinstance(ttotal, int):
-            raise ValueError('ttotal needs to be a positive number')
+
       
-        if tquantity <=0 or ttotal <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
+        if tquantity <=0: raise ValueError('tquantity and ttotal shouldnt be less than zero')
 
         part_dao = PartsDAO()
         supplier_dao = SupplierDAO()
@@ -55,37 +50,23 @@ class TransactionHandler:
         warehouse_dao = WarehouseDAO()
 
         part_row = part_dao.getPartById(pid)
-        supplier_row = supplier_dao.get_supplier_by_ID(sid)
-        rack_row = rack_dao.get_rack_by_id(rid)
+        rid = rack_dao.get_rid_from_wid_and_pid(wid,pid)
         user_row = user_dao.getUserById(uid)
         warehouse_row = warehouse_dao.get_warehouse_by_id(wid)
 
-        if not part_row:
-            raise ValueError('Provided PID invalid')
-        if not supplier_row:
-            raise ValueError('Provided SID invalid')
-        if not rack_row:
-            raise ValueError('Provided RID invalid')
-        if not user_row:
-            raise ValueError('Provided UID invalid')
         if not warehouse_row:
             raise ValueError('Provided WID invalid')
-
-        supid = supplier_dao.get_supply_by_sid_and_pid(sid,pid)
-        if not supid:
-            raise ValueError('Provided supplier does not provide this part')
+        if not part_row:
+            raise ValueError('Provided PID invalid')
+        if not rid:
+            raise ValueError(f'Warehouse {wid}, does not have a rack with part {pid}')
+        if not user_row:
+            raise ValueError('Provided UID invalid')
 
         #validate user belongs to warehouse
         user_wid = user_dao.getUserWarehouse(uid)[0]
         if user_wid != wid:
             raise ValueError('User does work for given warehouse')
-        
-        if rack_dao.get_rack_warehouse(rid)[0] != wid:
-            raise ValueError('Rack does not exist in warehouse')
-
-        rack_pid = rack_dao.get_rack_part(rid)[0]
-        if rack_pid != pid:
-           raise ValueError('Rack does not hold provided part')
         
         if not obuyer:
             raise ValueError('Buyer is not set')
@@ -316,33 +297,33 @@ class TransactionHandler:
         Mutates outgoingt, transaction, warehouse,
         and rack related to transaction
         """
-        KEYS_LENGTH = 8
+        KEYS_LENGTH = 5
         if len(json) != KEYS_LENGTH:
             return jsonify(Error = 'Malformed json'), 400
 
         tquantity = json.get('tquantity', None)
         obuyer = json.get('obuyer', None)
-        ttotal = json.get('ttotal', None)
         pid = json.get('pid', None)
-        sid = json.get('sid', None)
-        rid = json.get('rid', None)
         uid = json.get('uid', None)
         wid = json.get('wid', None)
+        
         try:
-            self.validate_outgoing(pid, sid, rid, uid, wid, tquantity, ttotal, obuyer)
+            self.validate_outgoing(pid, uid, wid, tquantity, obuyer)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
+        rid = RackDAO().get_rid_from_wid_and_pid(wid,pid)
         #mutations
         transaction_dao = outgoing_dao = TransactionDAO()
-        tid = transaction_dao.insert_transaction(tquantity, ttotal, pid, sid, rid, uid)
-        outid = outgoing_dao.insert_outgoing(obuyer, wid, tid)
+        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid)
+        outid = outgoing_dao.insert_outgoing(obuyer, tid)
         tdate = transaction_dao.get_transaction_date(tid)
-        attr_array = [tid,outid, obuyer, wid, tdate, tquantity, ttotal, pid, sid, rid, uid]
+        attr_array = [tid,outid, obuyer, tdate, tquantity, pid, uid, wid]
 
         #update tables
         warehouse_dao = WarehouseDAO()
-        new_budget = warehouse_dao.get_warehouse_budget(wid) + ttotal*self.profit_yield
+        pprice = PartsDAO().get_part_price(pid)
+        new_budget = warehouse_dao.get_warehouse_budget(wid) + pprice*tquantity*self.profit_yield
         wid = warehouse_dao.set_warehouse_budget(wid, new_budget)
 
         new_quantity = RackDAO().get_rack_quantity(rid) - tquantity

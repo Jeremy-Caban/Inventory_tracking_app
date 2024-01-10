@@ -255,9 +255,9 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         query = "select tid from outgoingt where outid = %s;"
         cursor.execute(query, (outid,))
-        tid = cursor.fetchone()[0]
+        tid = cursor.fetchone()
         cursor.close()
-        return tid
+        return tid[0] if tid else tid
 
     def insert_outgoing(self, obuyer, tid):
         cursor = self.conn.cursor()
@@ -272,10 +272,10 @@ class TransactionDAO:
         return outid
     
     #TODO(xavier)
-    def update_outgoing(self, outid, obuyer, wid):
+    def update_outgoing(self, outid, obuyer):
         cursor = self.conn.cursor()
-        query = "update outgoingt set obuyer = %s, wid= %s where outid = %s;"
-        cursor.execute(query, (obuyer, wid, outid))
+        query = "update outgoingt set obuyer = %s, where outid = %s;"
+        cursor.execute(query, (obuyer, outid))
         self.conn.commit()
         cursor.close()
         return outid

@@ -98,5 +98,5 @@ class PartsDAO:
             select pprice from parts as p where p.pid = %s;
         '''
         cursor.execute(query, (pid,))
-        pprice = cursor.fetchone()[0]
-        return pprice
+        pprice = cursor.fetchone()
+        return pprice[0] if pprice else pprice
