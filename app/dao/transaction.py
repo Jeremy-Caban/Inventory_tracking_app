@@ -196,12 +196,12 @@ class TransactionDAO:
     def get_warehouse_least_cost(self, wid, amount):
         cursor = self.conn.cursor()
         query = '''
-                select tdate, sum(ttotal)
-                from warehouse natural inner join incomingt
-                    natural inner join transaction
+                select tdate, sum(pprice*tquantity)
+                from transaction natural inner join incomingt 
+                    natural inner join parts natural inner join warehouse
                 where wid = %s
                 group by tdate
-                order by sum(ttotal)
+                order by sum(pprice*tquantity)
                 limit %s
                 '''
         cursor.execute(query, (wid, amount))
