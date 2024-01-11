@@ -115,12 +115,12 @@ class UserDAO:
         query = '''
         select uid, count(tid)
         from transfert natural inner join transaction
-        where incoming_wid = %s or outgoing_wid = %s
+        where wid = %s
         group by uid
         order by count(tid) desc
         limit %s
         '''
-        cursor.execute(query, (wid, wid, amount))
+        cursor.execute(query, (wid, amount))
         result = [row for row in cursor]
         cursor.close()
         return result
