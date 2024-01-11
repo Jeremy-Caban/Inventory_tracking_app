@@ -95,7 +95,7 @@ class WarehouseHandler:
             return jsonify(Error='User has no access to warehouse.'), 403
         profits = dao.get_warehouse_profit(wid)
         result = [dict(zip(['year','profit'], row)) for row in profits]
-        return jsonify(Profits={'profit':result})
+        return jsonify(Profits=result)
 
     def insert_warehouse(self, json):
         wname = json.get('wname', None)
