@@ -40,7 +40,7 @@ class WarehouseDAO:
         cursor = self.conn.cursor()
         query = '''
         select wid, count(incid)
-        from warehouse natural inner join incomingt
+        from warehouse natural inner join incomingt natural inner join transaction
         group by wid
         order by count(incid) desc
         limit %s;
