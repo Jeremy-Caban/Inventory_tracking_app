@@ -141,24 +141,16 @@ class WarehouseDAO:
     def get_warehouse_profit(self, wid):
         cursor = self.conn.cursor()
         query = '''
-        SELECT DATE_TRUNC('year', expenses.year) as year,
-            SUM(earnings.income - expenses.cost) AS profit
-        FROM
-        (SELECT SUM(tquantity * pprice) AS income,
-            DATE_TRUNC('year', tdate) AS year
-        FROM transaction
-        NATURAL INNER JOIN outgoingt
-        NATURAL INNER JOIN parts where wid = %s group by year) AS earnings,
-    
-        (SELECT SUM(tquantity * pprice) AS cost,
-            DATE_TRUNC('year', tdate) AS year
-        FROM transaction
-        NATURAL INNER JOIN incomingt
-        NATURAL INNER JOIN parts where wid = %s group by year) AS expenses
+        select year, income-cost as profit from
 
-        WHERE expenses.year = earnings.year
-        GROUP BY expenses.year, earnings.income, expenses.cost
-        ORDER BY expenses.year;
+        (select extract(year from tdate) as year, sum(pprice*transaction.tquantity) as cost 
+        from incomingt natural inner join transaction natural inner join parts
+        where wid=%s group by year) as expenses
+
+        natural inner join
+        
+        (select extract(year from tdate) as year, sum(pprice*transaction.tquantity*1.10) as income
+        from outgoingt natural inner join transaction  natural inner join parts where wid=%s group by year) as earnings;
         '''
         cursor.execute(query, (wid, wid))
         result = [row for row in cursor]
