@@ -168,9 +168,10 @@ class WarehouseDAO:
     def get_warehouse_most_deliver(self, amount):
         cursor = self.conn.cursor()
         query = '''
-        select outgoing_wid, count(outgoing_wid) as count
-        from transfert
-        group by outgoing_wid
+        select wid, count(taction) as count
+        from transfert natural inner join transaction
+        where taction = 'sending'
+        group by wid
         order by count desc
         limit %s;
         '''
