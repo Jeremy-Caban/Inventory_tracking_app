@@ -93,8 +93,9 @@ class WarehouseHandler:
             return jsonify(Error='User not found'), 404
         if user_warehouse_tuple[0] != wid:
             return jsonify(Error='User has no access to warehouse.'), 403
-        result = dao.get_warehouse_profit(wid)
-        return jsonify(Profit={'profit':result})
+        profits = dao.get_warehouse_profit(wid)
+        result = [dict(zip(['year','profit'], row)) for row in profits]
+        return jsonify(Profits={'profit':result})
 
     def insert_warehouse(self, json):
         wname = json.get('wname', None)
