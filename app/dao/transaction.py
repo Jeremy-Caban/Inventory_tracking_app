@@ -113,17 +113,25 @@ class TransactionDAO:
         cursor.close()
         return result
     
-    def insert_transaction(self, tquantity, ttotal, pid, sid, rid, uid):
+    def insert_transaction(self, tquantity, pid, wid, uid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_transaction"], (tquantity, ttotal, pid, sid, rid, uid))
+        query = '''insert into transaction(tdate, tquantity, pid, wid, uid)
+                                values(now(), %s, %s, %s, %s) returning tid;
+                            '''
+        cursor.execute(query, (tquantity, pid, wid, uid))
         tid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return tid
 
-    def update_transaction(self, tquantity, ttotal, pid, sid, rid, uid, tid):
+    def update_transaction(self, tquantity, wid, pid, rid, uid, tid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["update_transaction"], (tquantity, ttotal, pid, sid, rid, uid, tid))
+        query = '''
+                update transaction set tdate = now(), tquantity = %s, wid = %s, pid = %s,
+                uid = %s
+                where tid = %s;
+                ''',
+        cursor.execute(query, (tquantity, wid, pid, uid, tid))
         self.conn.commit()
         cursor.close()
         return tid
@@ -152,7 +160,8 @@ class TransactionDAO:
     
     def get_incoming_by_id(self, incid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_incoming_by_id"], (incid,))
+        query = "select * from incomingt natural inner join transaction where incid = %s;"
+        cursor.execute(query, (incid,))
         result = [row for row in cursor]
         cursor.close()
         return result
@@ -163,25 +172,39 @@ class TransactionDAO:
         cursor.close()
         return tid
 
-    def insert_incoming(self, wid, tid): #modify attributes
+    def insert_incoming(self, sid, tid): #modify attributes
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_incoming"], (wid, tid))
+        query = '''
+                insert into incomingt(sid, tid)
+                values (%s, %s) returning incid;
+                '''
+        cursor.execute(query, (sid, tid))
         incid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return incid
     
-    def update_incoming(self, wid, incid):
+    def update_incoming(self, sid, incid):
         cursor = self.conn.cursor()
-        query = "update incomingt set wid= %s where incid = %s;"
-        cursor.execute(query, (wid, incid))
+        query = "update incomingt set sid= %s where incid = %s;"
+        cursor.execute(query, (sid, incid))
         self.conn.commit()
         cursor.close()
         return incid
-       
+
+    #isnt going to work since ttotal got deprecated   
     def get_warehouse_least_cost(self, wid, amount):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["get_least_cost"], (wid, amount))
+        query = '''
+                select tdate, sum(ttotal)
+                from warehouse natural inner join incomingt
+                    natural inner join transaction
+                where wid = %s
+                group by tdate
+                order by sum(ttotal)
+                limit %s
+                '''
+        cursor.execute(query, (wid, amount))
         result = [row for row in cursor]
         cursor.close()
         return result
@@ -232,23 +255,27 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         query = "select tid from outgoingt where outid = %s;"
         cursor.execute(query, (outid,))
-        tid = cursor.fetchone()[0]
+        tid = cursor.fetchone()
         cursor.close()
-        return tid
+        return tid[0] if tid else tid
 
-    def insert_outgoing(self, obuyer, wid, tid):
+    def insert_outgoing(self, obuyer, tid):
         cursor = self.conn.cursor()
-        cursor.execute(self.query_dict["insert_outgoing"], (obuyer,wid, tid))
+        query = '''
+                insert into outgoingt(obuyer, tid)
+                values (%s, %s) returning outid;
+                '''
+        cursor.execute(query, (obuyer, tid))
         outid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
         return outid
     
     #TODO(xavier)
-    def update_outgoing(self, outid, obuyer, wid):
+    def update_outgoing(self, outid, obuyer):
         cursor = self.conn.cursor()
-        query = "update outgoingt set obuyer = %s, wid= %s where outid = %s;"
-        cursor.execute(query, (obuyer, wid, outid))
+        query = "update outgoingt set obuyer = %s, where outid = %s;"
+        cursor.execute(query, (obuyer, outid))
         self.conn.commit()
         cursor.close()
         return outid
@@ -278,16 +305,16 @@ class TransactionDAO:
         cursor = self.conn.cursor()
         query = "select tid from transfert where tranid = %s;"
         cursor.execute(query, (tranid,))
-        tid = cursor.fetchone()[0]
+        tid = cursor.fetchone()
         cursor.close()
-        return tid
+        return tid[0] if tid else tid
 
-    def insert_exchange(self, outgoing_wid, incoming_wid, tid):
+    def insert_exchange(self, taction, tid):
         cursor = self.conn.cursor()
-        query = ''' insert into transfert(outgoing_wid, incoming_wid, tid)
-                            values (%s, %s, %s) returning tranid;
+        query = ''' insert into transfert(taction, tid)
+                            values (%s, %s) returning tranid;
 '''
-        cursor.execute(query, (outgoing_wid,incoming_wid, tid))
+        cursor.execute(query, (taction, tid))
         tranid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()
@@ -306,27 +333,27 @@ class TransactionDAO:
 
 
 
-    def is_exchange_incoming_valid(self,tquant, uid, wid, rid, pid, sid):
+    def is_exchange_receiving_valid(self,tquant, uid, wid, pid):
         cursor = self.conn.cursor()
         query = '''
-        select (budget-pprice*%s >= 0 and quantity + %s <= capacity) as valid
-        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
-        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        select (quantity + %s <= capacity) as valid
+        from warehouse natural inner join rack natural inner join parts natural inner join "user"
+        where uid =%s and wid = %s and pid = %s;       
         '''
-        cursor.execute(query, (tquant, tquant, uid, wid, rid, pid, sid))
+        cursor.execute(query, (tquant, uid, wid, pid))
         result = [row for row in cursor]
         cursor.close()
         return result
     
     
-    def is_exchange_outgoing_valid(self,tquant, uid, wid, rid, pid, sid):
+    def is_exchange_sending_valid(self,tquant, uid, wid, pid):
         cursor = self.conn.cursor()
         query = '''
         select (rack.quantity - %s >=0) as valid
-        from warehouse natural inner join rack natural inner join parts natural inner join "user" natural inner join supplies natural inner join supplier
-        where uid =%s and wid = %s and rid = %s and pid = %s and sid = %s;        
+        from warehouse natural inner join rack natural inner join parts natural inner join "user"
+        where uid =%s and wid = %s and pid = %s;      
         '''
-        cursor.execute(query, (tquant, uid, wid, rid, pid, sid))
+        cursor.execute(query, (tquant, uid, wid, pid))
         result = [row for row in cursor]
         cursor.close()
         return result

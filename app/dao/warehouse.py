@@ -134,9 +134,9 @@ class WarehouseDAO:
             select budget from warehouse as w where w.wid = %s;
         '''
         cursor.execute(query, (wid,))
-        budget = cursor.fetchone()[0]
+        budget = cursor.fetchone()
         cursor.close()
-        return budget
+        return budget[0] if budget else budget
 
     def get_warehouse_profit(self, wid):
         cursor = self.conn.cursor()
