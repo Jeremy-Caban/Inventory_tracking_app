@@ -102,7 +102,7 @@ class WarehouseDAO:
         cursor = self.conn.cursor()
         query = '''
         select wid, count(outid)
-        from warehouse natural inner join outgoingt
+        from warehouse natural inner join transaction natural inner join outgoingt
         group by wid
         order by count(outid)
         limit %s;
