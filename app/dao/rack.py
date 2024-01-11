@@ -32,7 +32,7 @@ class RackDAO:
     def get_warehouse_racks_lowstock(self, wid, amount):
         cursor = self.conn.cursor()
         query = '''
-        select rid, capacity, quantity, pid, wid
+        select rid, capacity, wid, quantity, pid
         from (
            select * from
            warehouse w natural inner join rack r
