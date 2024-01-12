@@ -87,7 +87,7 @@ class PartHandler:
         dao = PartsDAO()
         result = dao.delete(pid)
         if result == -1:
-            return jsonify(Error=f"Part {pid} cannot be deleted because it is still referenced in a rack."), 400
+            return jsonify(Error=f"Part {pid} cannot be deleted because it is still referenced elsewhere."), 400
         elif result:
             return jsonify(DeleteStatus="OK"), 200
         return jsonify(Error="Part not found."), 404
