@@ -1,5 +1,6 @@
 from app.config import dbconfig
 import psycopg2
+from psycopg2 import errors
 
 #TODO(xavier)
 class WarehouseDAO:
@@ -89,14 +90,19 @@ class WarehouseDAO:
         return wid
 
     def delete(self, wid):
-        cursor = self.conn.cursor()
-        query = '''
+        try:
+
+            cursor = self.conn.cursor()
+            query = '''
             delete from warehouse where wid = %s;
-        '''
-        cursor.execute(query, (wid,))
-        self.conn.commit()
-        cursor.close()
-        return wid
+            '''
+            cursor.execute(query, (wid,))
+            self.conn.commit()
+            cursor.close()
+            return wid
+        except errors.ForeignKeyViolation as error:
+            self.conn.rollback()
+            return -1
 
     def get_warehouse_least_outgoing(self, amount):
         cursor = self.conn.cursor()

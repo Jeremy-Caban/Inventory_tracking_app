@@ -142,6 +142,8 @@ class WarehouseHandler:
         if not dao.get_warehouse_by_id(wid):
             return jsonify(Error="Warehouse not found"), 404
         response = dao.delete(wid)
+        if response == -1:
+            return jsonify(Error=f"Warehouse {wid} is treated as foreign key elsewhere; cannot be deleted."), 400
         return jsonify(DeletedStatus='OK',row=response), 200
 
     def get_warehouse_parts(self, wid, json):
