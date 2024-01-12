@@ -4,18 +4,18 @@ import psycopg2
 from app import app
 
 #Seba Local DB Credentials
-dbconfig.host = "localhost"
-dbconfig.dbname = "testdb"
-dbconfig.user = "postgres"
-dbconfig.password = "postgres"
-dbconfig.port = "5432"
+# dbconfig.host = "localhost"
+# dbconfig.dbname = "testdb"
+# dbconfig.user = "postgres"
+# dbconfig.password = "postgres"
+# dbconfig.port = "5432"
 
 #Jeremy Local DB Credentials
-# dbconfig.user = 'postgres'
-# dbconfig.password = 'DBLosCangri587'
-# dbconfig.dbname = 'postgres'
-# dbconfig.host = 'localhost'
-# dbconfig.port = 5432
+dbconfig.user = 'postgres'
+dbconfig.password = 'DBLosCangri587'
+dbconfig.dbname = 'postgres'
+dbconfig.host = 'localhost'
+dbconfig.port = 5432
 
 a = app.test_client()
 
@@ -104,7 +104,7 @@ a.post(w, json ={"wname":"Sebastian warehouse", "wcity":"Moca", "wemail":"db@Seb
 a.post(w, json ={"wname":"Xavier warehouse", "wcity":"Mayaguez", "wemail":"db@Xavier", "wphone":"787-8DB-TEST", "budget":100}) #8
 a.post(w, json ={"wname":"Leamsi Warehouse", "wcity":"Fajardo", "wemail":"db@Leamsi", "wphone":"787-9DB-TEST", "budget":500}) #9
 a.post(w, json ={"wname":"Los Cangri Warehouse", "wcity":"Mayaguez", "wemail":"db@Cangri", "wphone":"787-0DB-TEST", "budget":300}) #10
-a.post(w, json ={"wname":"Phase 3 Warehouse", "wcity":"Aguada", "wemail":"db@Phase3", "wphone":"787-0DB-TEST", "budget":1}) #11
+a.post(w, json ={"wname":"poor mans Warehouse", "wcity":"Aguada", "wemail":"db@Phase3", "wphone":"787-0DB-TEST", "budget":1}) #11
 
 #User Creation---------------------------------------------------------------------------------
 first_names = ["Ethan", "Ava", "Lucas", "Mia", "Oliver", "Sophia", "Noah", "Isabella", "Liam", "Olivia", "Jackson", "Emma", "Aiden", "Harper", "Caleb", "Abigail", "Mason", "Emily", "Logan", "Ella", "Benjamin", "Scarlett"]
@@ -118,12 +118,129 @@ for i in range(22):
     
     
 #Rack Creation---------------------------------------------------------------------------------
-a.post(r, json = {"capacity":100, "wid":1, "quantity":12, "pid":1})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":100, "pid":1})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":24, "pid":2})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":4, "pid":3})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":12, "pid":4})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":7, "pid":5})
+a.post(r, json = {"capacity":100, "wid":1, "quantity":23, "pid":6})
+
+a.post(r, json = {"capacity":100, "wid":2, "quantity":9, "pid":1})
+a.post(r, json = {"capacity":100, "wid":2, "quantity":25, "pid":2})
+a.post(r, json = {"capacity":100, "wid":2, "quantity":21, "pid":7})
+a.post(r, json = {"capacity":100, "wid":2, "quantity":8, "pid":8})
+a.post(r, json = {"capacity":100, "wid":2, "quantity":17, "pid":9})
+a.post(r, json = {"capacity":100, "wid":2, "quantity":80, "pid":3})
+
+a.post(r, json = {"capacity":100, "wid":3, "quantity":5, "pid":1})
+a.post(r, json = {"capacity":100, "wid":3, "quantity":13, "pid":2})
+a.post(r, json = {"capacity":100, "wid":3, "quantity":11, "pid":5})
+a.post(r, json = {"capacity":100, "wid":3, "quantity":24, "pid":6})
+a.post(r, json = {"capacity":100, "wid":3, "quantity":4, "pid":7})
+a.post(r, json = {"capacity":100, "wid":3, "quantity":67, "pid":8})
+
+a.post(r, json = {"capacity":100, "wid":4, "quantity":60, "pid":1})
+a.post(r, json = {"capacity":100, "wid":4, "quantity":23, "pid":2})
+a.post(r, json = {"capacity":100, "wid":4, "quantity":57, "pid":9})
+a.post(r, json = {"capacity":100, "wid":4, "quantity":87, "pid":8})
+a.post(r, json = {"capacity":100, "wid":4, "quantity":18, "pid":7})
+a.post(r, json = {"capacity":100, "wid":4, "quantity":14, "pid":6})
+
+a.post(r, json = {"capacity":100, "wid":5, "quantity":12, "pid":1})
+a.post(r, json = {"capacity":100, "wid":5, "quantity":21, "pid":2})
+a.post(r, json = {"capacity":100, "wid":5, "quantity":5, "pid":3})
+a.post(r, json = {"capacity":100, "wid":5, "quantity":32, "pid":5})
+a.post(r, json = {"capacity":100, "wid":5, "quantity":5, "pid":6})
+a.post(r, json = {"capacity":100, "wid":5, "quantity":8, "pid":9})
+
+a.post(r, json = {"capacity":100, "wid":6, "quantity":18, "pid":1})
+a.post(r, json = {"capacity":100, "wid":6, "quantity":53, "pid":2})
+a.post(r, json = {"capacity":100, "wid":6, "quantity":90, "pid":9})
+a.post(r, json = {"capacity":100, "wid":6, "quantity":9, "pid":7})
+a.post(r, json = {"capacity":100, "wid":6, "quantity":8, "pid":5})
+a.post(r, json = {"capacity":100, "wid":6, "quantity":53, "pid":3})
+
+a.post(r, json = {"capacity":100, "wid":7, "quantity":8, "pid":1})
+a.post(r, json = {"capacity":100, "wid":7, "quantity":22, "pid":2})
+a.post(r, json = {"capacity":100, "wid":7, "quantity":3, "pid":6})
+a.post(r, json = {"capacity":100, "wid":7, "quantity":21, "pid":6})
+a.post(r, json = {"capacity":100, "wid":7, "quantity":24, "pid":8})
+a.post(r, json = {"capacity":100, "wid":7, "quantity":13, "pid":9})
+
+a.post(r, json = {"capacity":100, "wid":8, "quantity":12, "pid":1})
+a.post(r, json = {"capacity":100, "wid":8, "quantity":2, "pid":2})
+a.post(r, json = {"capacity":100, "wid":8, "quantity":5, "pid":7})
+a.post(r, json = {"capacity":100, "wid":8, "quantity":4, "pid":4})
+a.post(r, json = {"capacity":100, "wid":8, "quantity":2, "pid":6})
+a.post(r, json = {"capacity":100, "wid":8, "quantity":1, "pid":8})
+
+a.post(r, json = {"capacity":100, "wid":9, "quantity":97, "pid":1})
+a.post(r, json = {"capacity":100, "wid":9, "quantity":3, "pid":2})
+a.post(r, json = {"capacity":100, "wid":9, "quantity":5, "pid":8})
+a.post(r, json = {"capacity":100, "wid":9, "quantity":2, "pid":5})
+a.post(r, json = {"capacity":100, "wid":9, "quantity":6, "pid":3})
+a.post(r, json = {"capacity":100, "wid":9, "quantity":20, "pid":4})
+
+a.post(r, json = {"capacity":100, "wid":10, "quantity":1, "pid":1})
+a.post(r, json = {"capacity":100, "wid":10, "quantity":11, "pid":2})
+a.post(r, json = {"capacity":100, "wid":10, "quantity":14, "pid":1})
+a.post(r, json = {"capacity":100, "wid":10, "quantity":42, "pid":9})
+a.post(r, json = {"capacity":100, "wid":10, "quantity":21, "pid":3})
+a.post(r, json = {"capacity":100, "wid":10, "quantity":15, "pid":5})
+
+a.post(r, json = {"capacity":100, "wid":11, "quantity":5, "pid":1})
+a.post(r, json = {"capacity":100, "wid":11, "quantity":2, "pid":2})
+a.post(r, json = {"capacity":100, "wid":11, "quantity":32, "pid":4})
+a.post(r, json = {"capacity":100, "wid":11, "quantity":2, "pid":7})
+a.post(r, json = {"capacity":100, "wid":11, "quantity":1, "pid":3})
+a.post(r, json = {"capacity":100, "wid":11, "quantity":0, "pid":9})
+
 
 #Transaction Creation---------------------------------------------------------------------------------
 
 #incoming
+#wid 1
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":1})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":1})
 
+#wid 2
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":2})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":2})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":2})
+
+#wid 3
+
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":1})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":1})
+
+#wid 4
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":1})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":1})
+#wid 5
 #outgoing
+a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":1,"uid":1,"wid":1})
+a.post(o, json = {"tquantity":1,"obuyer":"Test","pid":2,"uid":2,"wid":1})
+a.post(o, json = {"tquantity":7,"obuyer":"Test","pid":5,"uid":1,"wid":1})
+
+a.post(o, json = {"tquantity":2,"obuyer":"omegle","pid":8,"uid":3,"wid":2})
+a.post(o, json = {"tquantity":3,"obuyer":"papa johns","pid":9,"uid":4,"wid":2})
+a.post(o, json = {"tquantity":1,"obuyer":"big bear bobby","pid":3,"uid":3,"wid":2})
+
+a.post(o, json = {"tquantity":2,"obuyer":"Test","pid":1,"uid":1,"wid":3})
+a.post(o, json = {"tquantity":6,"obuyer":"Test","pid":2,"uid":2,"wid":3})
+a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":5,"uid":1,"wid":3})
+
+a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":1,"uid":1,"wid":4})
+a.post(o, json = {"tquantity":1,"obuyer":"Test","pid":2,"uid":2,"wid":4})
+a.post(o, json = {"tquantity":7,"obuyer":"Test","pid":5,"uid":1,"wid":4})
+
+a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":1,"uid":1,"wid":5})
+a.post(o, json = {"tquantity":1,"obuyer":"Test","pid":2,"uid":2,"wid":5})
+a.post(o, json = {"tquantity":7,"obuyer":"Test","pid":5,"uid":1,"wid":5})
+
+
 
 #exchange
