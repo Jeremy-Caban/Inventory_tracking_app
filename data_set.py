@@ -73,24 +73,24 @@ a.post(s, json = {"sname":"Walgreens", "scity":"San Juan", "sphone":"787-3DB-TES
 
 #Supplies Creation (Each Supplier will supply 3 parts)--------------------
 #Supplier 1
-a.post(s+f"/{1}", json = {"pid":"1", "stock":100})
-a.post(s+f"/{1}", json ={"pid":"2", "stock":100})
-a.post(s+f"/{1}", json ={"pid":"3", "stock":100})
+a.post(s+f"/{1}/parts", json = {"pid":"1", "stock":100})
+a.post(s+f"/{1}/parts", json ={"pid":"2", "stock":100})
+a.post(s+f"/{1}/parts", json ={"pid":"3", "stock":100})
 
 #Supplier 2
-a.post(s+f"/{2}", json ={"pid":"3", "stock":50})
-a.post(s+f"/{2}", json ={"pid":"5", "stock":50})
-a.post(s+f"/{2}", json ={"pid":"6", "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":"3", "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":"5", "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":"6", "stock":50})
 
 #Supplier 3
-a.post(s+f"/{3}", json ={"pid":"7", "stock":40})
-a.post(s+f"/{3}", json ={"pid":"4", "stock":40})
-a.post(s+f"/{3}", json ={"pid":"8", "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":"7", "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":"4", "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":"8", "stock":40})
 
 #Supplier 4
-a.post(s+f"/{4}", json ={"pid":"4", "stock":30})
-a.post(s+f"/{4}", json ={"pid":"3", "stock":30})
-a.post(s+f"/{4}", json ={"pid":"9", "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":"4", "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":"3", "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":"9", "stock":30})
 
 #Warehouse Creation-------------------------------------------------------
 #cities: Aguada: 4, San Juan: 1, Mayaguez: 3, Caguas: 1, Moca: 1, Fajardo: 1
@@ -211,14 +211,14 @@ a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":2})
 
 #wid 3
 
-a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1})
-a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":1})
-a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":1})
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":3})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":3})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":3})
 
 #wid 4
-a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1})
-a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":1})
-a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":1})
+a.post(i, json = {"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":4})
+a.post(i, json = {"tquantity":1,"pid":2,"sid":2,"uid":2,"wid":4})
+a.post(i, json = {"tquantity":3,"pid":1,"sid":2,"uid":1,"wid":4})
 #wid 5
 #outgoing
 a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":1,"uid":1,"wid":1})
@@ -229,9 +229,9 @@ a.post(o, json = {"tquantity":2,"obuyer":"omegle","pid":8,"uid":3,"wid":2})
 a.post(o, json = {"tquantity":3,"obuyer":"papa johns","pid":9,"uid":4,"wid":2})
 a.post(o, json = {"tquantity":1,"obuyer":"big bear bobby","pid":3,"uid":3,"wid":2})
 
-a.post(o, json = {"tquantity":2,"obuyer":"Test","pid":1,"uid":1,"wid":3})
-a.post(o, json = {"tquantity":6,"obuyer":"Test","pid":2,"uid":2,"wid":3})
-a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":5,"uid":1,"wid":3})
+a.post(o, json = {"tquantity":2,"obuyer":"Test","pid":1,"uid":5,"wid":3})
+a.post(o, json = {"tquantity":6,"obuyer":"Test","pid":2,"uid":6,"wid":3})
+a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":5,"uid":5,"wid":3})
 
 a.post(o, json = {"tquantity":4,"obuyer":"Test","pid":1,"uid":1,"wid":4})
 a.post(o, json = {"tquantity":1,"obuyer":"Test","pid":2,"uid":2,"wid":4})
