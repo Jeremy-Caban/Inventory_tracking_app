@@ -4,18 +4,18 @@ import psycopg2
 from app import app
 
 #Seba Local DB Credentials
-# dbconfig.host = "localhost"
-# dbconfig.dbname = "testdb"
-# dbconfig.user = "postgres"
-# dbconfig.password = "postgres"
-# dbconfig.port = "5432"
+dbconfig.host = "localhost"
+dbconfig.dbname = "testdb"
+dbconfig.user = "postgres"
+dbconfig.password = "postgres"
+dbconfig.port = "5432"
 
 #Jeremy Local DB Credentials
-dbconfig.user = 'postgres'
-dbconfig.password = 'DBLosCangri587'
-dbconfig.dbname = 'postgres'
-dbconfig.host = 'localhost'
-dbconfig.port = 5432
+# dbconfig.user = 'postgres'
+# dbconfig.password = 'DBLosCangri587'
+# dbconfig.dbname = 'postgres'
+# dbconfig.host = 'localhost'
+# dbconfig.port = 5432
 
 a = app.test_client()
 
@@ -73,24 +73,24 @@ a.post(s, json = {"sname":"Walgreens", "scity":"San Juan", "sphone":"787-3DB-TES
 
 #Supplies Creation (Each Supplier will supply 3 parts)--------------------
 #Supplier 1
-a.post(s+f"/{1}/parts", json = {"pid":"1", "stock":100})
-a.post(s+f"/{1}/parts", json ={"pid":"2", "stock":100})
-a.post(s+f"/{1}/parts", json ={"pid":"3", "stock":100})
+a.post(s+f"/{1}/parts", json = {"pid":1, "stock":100})
+a.post(s+f"/{1}/parts", json ={"pid":2, "stock":100})
+a.post(s+f"/{1}/parts", json ={"pid":3, "stock":100})
 
 #Supplier 2
-a.post(s+f"/{2}/parts", json ={"pid":"3", "stock":50})
-a.post(s+f"/{2}/parts", json ={"pid":"5", "stock":50})
-a.post(s+f"/{2}/parts", json ={"pid":"6", "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":3, "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":5, "stock":50})
+a.post(s+f"/{2}/parts", json ={"pid":6, "stock":50})
 
 #Supplier 3
-a.post(s+f"/{3}/parts", json ={"pid":"7", "stock":40})
-a.post(s+f"/{3}/parts", json ={"pid":"4", "stock":40})
-a.post(s+f"/{3}/parts", json ={"pid":"8", "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":7, "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":4, "stock":40})
+a.post(s+f"/{3}/parts", json ={"pid":8, "stock":40})
 
 #Supplier 4
-a.post(s+f"/{4}/parts", json ={"pid":"4", "stock":30})
-a.post(s+f"/{4}/parts", json ={"pid":"3", "stock":30})
-a.post(s+f"/{4}/parts", json ={"pid":"9", "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":4, "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":3, "stock":30})
+a.post(s+f"/{4}/parts", json ={"pid":9, "stock":30})
 
 #Warehouse Creation-------------------------------------------------------
 #cities: Aguada: 4, San Juan: 1, Mayaguez: 3, Caguas: 1, Moca: 1, Fajardo: 1
