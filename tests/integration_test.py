@@ -69,7 +69,7 @@ def helper_test_posts(client, endpoint, post_data, expected_status, expected_res
             for field in fields:
                 assert field in response_data[key]
                 #validate data
-                if field in post_data:
+                if field in post_data and field !='tdate':
                     assert response_data[key][field] == post_data[field]
         return True
 
@@ -212,7 +212,7 @@ how to test transactions
 """
 
 @pytest.mark.parametrize("data, status_code", [
-    ({"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":2,"pid":1,"sid":1,"uid":1,"wid":1, "tdate":"2022-2-1"}, 201),  # Successful case
     # test warehouse budget
     ({"tquantity":3,"pid":1,"sid":1,"uid":1,"wid":1}, 201),  # Successful case, note: warehouse budget is now 0
     ({"tquantity":3,"pid":1,"sid":1,"uid":1,"wid":1}, 400),  # Warehouse doesnt have enough budget
@@ -261,7 +261,7 @@ def test_post_inncoming_transaction(client, data, status_code):
 
 @pytest.mark.parametrize("data, status_code", [
     # testing parts in rack
-    ({"tquantity":17,"obuyer":"Test","pid":1,"uid":1,"wid":1}, 201),  # Successful case
+    ({"tquantity":17,"obuyer":"Test","pid":1,"uid":1,"wid":1,"tdate":"2023-2-1"}, 201),  # Successful case
     ({"tquantity":1,"obuyer":"Test","pid":1,"uid":1,"wid":1}, 400),  # not enough parts in rack
     # testing relationships
     ({"tquantity":1,"obuyer":"Test","pid":2,"uid":1,"wid":1}, 400),  # warehouse does not have a rack with pid 2
@@ -302,61 +302,61 @@ def test_post_outgoing_transaction(client, data, status_code):
 
 
 
-# @pytest.mark.parametrize("data, status_code", [
-#     # testing parts in rack
-#     ({"tquantity":10,"pid":1, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 201),  # Successful case
-#     ({"tquantity":10,"pid":1, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # warehouse 2 does not have enough parts to send pid 1
-#     ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 201),  #  Successful case
-#     ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":2}, 400),  # user 2 does not work in warehouse 2
-#     ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":3,"receiving_uid":3}, 400),  # user 3 does not work in warehouse 1 and uids' are the same
-#     ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":1, "sending_uid":1,"receiving_uid":2}, 400),  # transfering to the same warehouse is redundant
-#     ({"tquantity":1,"pid":2, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # warehouse 1 doesnt have a rack with pid 2
-#     ({"tquantity":1,"pid":3, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # neither warehouse has pid 3
-#     ({"tquantity":1,"pid":4, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 201),  # neither warehouse has pid 3
-#     ({"tquantity":6,"pid":4, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # warehouse 2 has too many of pid 4
-#     ({"tquantity":-1,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
-#     ({"tquantity":"1","pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
-#     ({"tquantity":0,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
-#     ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":99}, 400),  # receiving uid does not exist
-#     ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":99, "sending_uid":1,"receiving_uid":3}, 400),  # receiving wid does not exist
-#     ({"tquantity":1,"pid":1, "sending_wid":99, "receiving_wid":1, "sending_uid":1,"receiving_uid":3}, 400),  # sending wid does not exist
-#     ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":1, "sending_uid":99,"receiving_uid":3}, 400),  # sending uid does not exist
-# ])
-# def test_post_exchange_transaction(client, data, status_code):
-#     from app.dao import parts, rack, warehouse, supplier
-#     pid = data.get('pid',None)
-#     sending_wid = data.get('sending_wid',None)
-#     receiving_wid = data.get('receiving_wid',None)
+@pytest.mark.parametrize("data, status_code", [
+    # testing parts in rack
+    ({"tquantity":10,"pid":1, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1, "tdate":"2023-2-1"}, 201),  # Successful case
+    ({"tquantity":10,"pid":1, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # warehouse 2 does not have enough parts to send pid 1
+    ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 201),  #  Successful case
+    ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":2}, 400),  # user 2 does not work in warehouse 2
+    ({"tquantity":5,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":3,"receiving_uid":3}, 400),  # user 3 does not work in warehouse 1 and uids' are the same
+    ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":1, "sending_uid":1,"receiving_uid":2}, 400),  # transfering to the same warehouse is redundant
+    ({"tquantity":1,"pid":2, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # warehouse 1 doesnt have a rack with pid 2
+    ({"tquantity":1,"pid":3, "sending_wid":2, "receiving_wid":1, "sending_uid":3,"receiving_uid":1}, 400),  # neither warehouse has pid 3
+    ({"tquantity":1,"pid":4, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 201),  # neither warehouse has pid 3
+    ({"tquantity":6,"pid":4, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # warehouse 2 has too many of pid 4
+    ({"tquantity":-1,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
+    ({"tquantity":"1","pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
+    ({"tquantity":0,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":3}, 400),  # Invalid tquantity
+    ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":2, "sending_uid":1,"receiving_uid":99}, 400),  # receiving uid does not exist
+    ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":99, "sending_uid":1,"receiving_uid":3}, 400),  # receiving wid does not exist
+    ({"tquantity":1,"pid":1, "sending_wid":99, "receiving_wid":1, "sending_uid":1,"receiving_uid":3}, 400),  # sending wid does not exist
+    ({"tquantity":1,"pid":1, "sending_wid":1, "receiving_wid":1, "sending_uid":99,"receiving_uid":3}, 400),  # sending uid does not exist
+])
+def test_post_exchange_transaction(client, data, status_code):
+    from app.dao import parts, rack, warehouse, supplier
+    pid = data.get('pid',None)
+    sending_wid = data.get('sending_wid',None)
+    receiving_wid = data.get('receiving_wid',None)
 
-#     sending_rid = rack.RackDAO().get_rid_from_wid_and_pid(sending_wid,pid)
-#     receiving_rid = rack.RackDAO().get_rid_from_wid_and_pid(receiving_wid,pid)
-#     receiving_rack_quant = rack.RackDAO().get_rack_quantity(receiving_rid)
-#     sending_rack_quant = rack.RackDAO().get_rack_quantity(sending_rid)
+    sending_rid = rack.RackDAO().get_rid_from_wid_and_pid(sending_wid,pid)
+    receiving_rid = rack.RackDAO().get_rid_from_wid_and_pid(receiving_wid,pid)
+    receiving_rack_quant = rack.RackDAO().get_rack_quantity(receiving_rid)
+    sending_rack_quant = rack.RackDAO().get_rack_quantity(sending_rid)
 
-#     endpoint = base_url + 'exchange'
-#     expected_structure = {"exchange": [ "tid", "tranid", 'taction', "tdate", "tquantity", "uid", "wid", "pid"]}
+    endpoint = base_url + 'exchange'
+    expected_structure = {"exchange": [ "tid", "tranid", 'taction', "tdate", "tquantity", "uid", "wid", "pid"]}
     
-#     response = client.post(endpoint, json = data)
-#     assert response.status_code == status_code, response.data
+    response = client.post(endpoint, json = data)
+    assert response.status_code == status_code, response.data
 
-#     if status_code!=201: return 
-#     response_data = response.json
-#     for key, fields in expected_structure.items():
-#         assert key in response_data
-#         for item in response_data[key]:
-#             for field in fields:
-#                 assert field in item
+    if status_code!=201: return 
+    response_data = response.json
+    for key, fields in expected_structure.items():
+        assert key in response_data
+        for item in response_data[key]:
+            for field in fields:
+                assert field in item
                 
-#                 if field in data:
-#                     assert item[field] == data[field]
+                if field in data and field!='tdate':
+                    assert item[field] == data[field]
 
 
-#     tquant = data.get('tquantity')
-#     assert rack.RackDAO().get_rack_quantity(sending_rid) == sending_rack_quant-tquant
-#     assert rack.RackDAO().get_rack_quantity(sending_rid) >=0
+    tquant = data.get('tquantity')
+    assert rack.RackDAO().get_rack_quantity(sending_rid) == sending_rack_quant-tquant
+    assert rack.RackDAO().get_rack_quantity(sending_rid) >=0
 
-#     assert rack.RackDAO().get_rack_quantity(receiving_rid) == receiving_rack_quant+tquant
-#     assert rack.RackDAO().get_rack_quantity(receiving_rid) <= rack.RackDAO().get_rack_capacity(receiving_rid)
+    assert rack.RackDAO().get_rack_quantity(receiving_rid) == receiving_rack_quant+tquant
+    assert rack.RackDAO().get_rack_quantity(receiving_rid) <= rack.RackDAO().get_rack_capacity(receiving_rid)
 
 # # @pytest.mark.parametrize("pid, data, status_code", [
 # #     # testing parts in rack

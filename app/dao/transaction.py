@@ -113,12 +113,12 @@ class TransactionDAO:
         cursor.close()
         return result
     
-    def insert_transaction(self, tquantity, pid, wid, uid):
+    def insert_transaction(self, tquantity, pid, wid, uid, tdate = 'now()'):
         cursor = self.conn.cursor()
         query = '''insert into transaction(tdate, tquantity, pid, wid, uid)
-                                values(now(), %s, %s, %s, %s) returning tid;
+                                values(%s, %s, %s, %s, %s) returning tid;
                             '''
-        cursor.execute(query, (tquantity, pid, wid, uid))
+        cursor.execute(query, (tdate, tquantity, pid, wid, uid))
         tid = cursor.fetchone()[0]
         self.conn.commit()
         cursor.close()

@@ -5,6 +5,8 @@ from app.dao.warehouse import WarehouseDAO
 from app.dao.user import UserDAO
 from app.dao.parts import PartsDAO
 from app.dao.supplier import SupplierDAO
+from datetime import datetime
+
 
 class TransactionHandler:
     #KEYS
@@ -12,6 +14,19 @@ class TransactionHandler:
     outgoing_keys = ['tid', 'outid','obuyer', 'tdate', 'tquantity','pid','uid','wid']
     exchange_keys = ['tid', 'tranid','taction', 'tdate', 'tquantity','pid','uid','wid']
     profit_yield = 1.10
+
+    def validate_tdate(self, tdate):
+        try:
+            if tdate=='now()': return True
+            else:
+            # Validate the date format (PostgreSQL default format is 'YYYY-MM-DD')
+                datetime.strptime(tdate, '%Y-%m-%d')
+                return True
+        except ValueError:
+            # The date format is incorrect
+            return False
+            
+
 
     def build_attributes_dict(self, attr_array, ttype):
         keys = []
@@ -191,26 +206,28 @@ class TransactionHandler:
     #CREATE-----
     def insert_incoming(self, json):
         KEYS_LENGTH = 5 #modify to fit all needed attr
-        if len(json) != KEYS_LENGTH:
+        if len(json) != 5 and len(json)!= 6:
             return jsonify(Error='Incorrent amount of keys sent in POST'), 400
         pid = json.get('pid')
         sid = json.get('sid')
         uid = json.get('uid')
         wid = json.get('wid')
         tquantity = json.get('tquantity')
+        tdate = json.get('tdate', 'now()')
 
         try:
             self.validate_incoming(pid, sid, uid, wid, tquantity)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
+        if not self.validate_tdate(tdate): return jsonify('tdate not valid'), 400
         transaction_dao = TransactionDAO()
         incoming_dao = TransactionDAO()
         warehouse_dao = WarehouseDAO()
         rack_dao = RackDAO()
         supplier_dao = SupplierDAO()
         rid = rack_dao.get_rid_from_wid_and_pid(wid,pid)
-        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid)
+        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid, tdate)
         
         #create entry in incoming transactions
         incid = incoming_dao.insert_incoming(sid, tid)
@@ -297,24 +314,26 @@ class TransactionHandler:
         and rack related to transaction
         """
         KEYS_LENGTH = 5
-        if len(json) != KEYS_LENGTH:
-            return jsonify(Error = 'Malformed json'), 400
+        if len(json) != 5 and len(json)!= 6:
+            return jsonify(Error='Incorrent amount of keys sent in POST'), 400
 
         tquantity = json.get('tquantity', None)
         obuyer = json.get('obuyer', None)
         pid = json.get('pid', None)
         uid = json.get('uid', None)
         wid = json.get('wid', None)
+        tdate = json.get('tdate', 'now()')
         
         try:
             self.validate_outgoing(pid, uid, wid, tquantity, obuyer)
         except ValueError as e:
             return jsonify(Error = e.args[0]), 400
 
+        if not self.validate_tdate(tdate): return jsonify('tdate not valid'), 400
         rid = RackDAO().get_rid_from_wid_and_pid(wid,pid)
         #mutations
         transaction_dao = outgoing_dao = TransactionDAO()
-        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid)
+        tid = transaction_dao.insert_transaction(tquantity, pid, wid, uid, tdate)
         outid = outgoing_dao.insert_outgoing(obuyer, tid)
         tdate = transaction_dao.get_transaction_date(tid)
         attr_array = [tid,outid, obuyer, tdate, tquantity, pid, uid, wid]
@@ -438,14 +457,17 @@ class TransactionHandler:
 
 
     def insert_exchange(self, json):
-        if len(json)!=6: return jsonify(Error = 'Malformed json'), 400
+        if len(json) != 6 and len(json)!= 7:
+            return jsonify(Error='Incorrent amount of keys sent in POST'), 400
         tquantity = json.get('tquantity', None)
         pid = json.get('pid', None)
         sending_wid = json.get('sending_wid', None)
         receiving_wid = json.get('receiving_wid', None)
         sending_uid = json.get('sending_uid', None)
         receiving_uid = json.get('receiving_uid', None)
+        tdate = json.get('tdate', 'now()')
 
+        if not self.validate_tdate(tdate): return jsonify('tdate not valid'), 400
         if not isinstance(tquantity, int) or tquantity <=0: return jsonify(Error = 'tquantity should be present as a positive int'), 400
         if sending_wid==receiving_wid: return jsonify('same warehouse transfers are not allowed'), 400
         tdao = TransactionDAO()
@@ -470,11 +492,11 @@ class TransactionHandler:
         receiving_new_quantity = receiving_rack_quant + tquantity
         rdao.set_rack_quantity(receiving_rid, receiving_new_quantity)
 
-        sending_tid = tdao.insert_transaction(tquantity, pid, sending_wid, sending_uid)
+        sending_tid = tdao.insert_transaction(tquantity, pid, sending_wid, sending_uid, tdate)
         sending_tranid = tdao.insert_exchange("sending", sending_tid)
         sending_tdate = tdao.get_transaction_date(sending_tid)
 
-        receiving_tid = tdao.insert_transaction(tquantity, pid, receiving_wid, receiving_uid)
+        receiving_tid = tdao.insert_transaction(tquantity, pid, receiving_wid, receiving_uid, tdate)
         receiving_tranid = tdao.insert_exchange('receiving', receiving_tid)
         receiving_tdate = tdao.get_transaction_date(receiving_tid)
         
